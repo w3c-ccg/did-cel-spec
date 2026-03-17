@@ -578,11 +578,12 @@ The following section outlines the DID operations for the `did:cel` method.
         <p>
 The create operation establishes a new `did:cel` [=DID document=] with a
 [=self-certifying identifier=] derived from the document's cryptographic hash. This
-operation generates an initial cryptographic key pair, constructs a [=DID document=] containing
-the public key as an assertion method, and adds a [=data integrity proof=] to
+operation accepts an initial cryptographic key pair and, optionally, an initial [=DID document=].
+It constructs a new `did:cel` event log containing the [=DID document=] updated with
+the public key as an assertion method, and a [=data integrity proof=] for
 the document. This approach ensures that the [=DID=] is intrinsically
 bound to the document's initial state, providing strong integrity guarantees
-without requiring external registration.
+without requiring external registration. 
         </p>
 
         <p>
@@ -594,6 +595,11 @@ subsequent updates, enabling verifiable audit trails and [=witness=] attestation
 The combination of the [=self-certifying identifier=], cryptographic proof, and
 event log creates a decentralized identifier implementation that requires no
 centralized authority for creation, validation, or resolution.
+        </p>
+
+        <p>
+The `did:cel` event log identifier is bound to both the initial public key and 
+the initial [=DID document=] state inclusive of that public key.
         </p>
 
         <p>
@@ -609,64 +615,109 @@ An example of a [=cryptographic event log=] containing the creation event for a
           <h4>Document Creation Algorithm</h4>
 
           <p>
-The following algorithm specifies how to create a new `did:cel` DID
-document with an initial verification method and establish a cryptographic event
-log. The algorithm takes an optional [=map=] |options| as input. The |options|
-map MAY contain a |keyType| property specifying an cryptographic key type to use
-(defaults to `P-256`). Output is a [=map=] containing the generated
-|didDocument|, the associated |keyPair|, and the initial
-|cryptographicEventLog|, or an error. Whenever this algorithm encodes strings,
-it MUST use UTF-8 encoding.
+The following algorithm specifies how to create a new `did:cel` [=DID document=]
+with an initial verification method and establish a cryptographic event
+log. The algorithm takes three parameters as input: a cryptographic |keyPair|,
+an optional [=map=] representing the generic initial |didDocument|,
+and |options|. The output is a [=map=] containing the `did:cel` |didDocument|, 
+the generated |verificationMethod|, and the initial |cryptographicEventLog|, or an error. 
+Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
+          </p>
+          <p>
+The initial |didDocument| may already contain defined relationship and services,
+or it may be an empty [=map=].
+          </p>
+          <p>
+The |options| parameter is an optional [=map=] structure that allows to define a 
+|verificationMethod| identifier |options|.|vmId| and a boolean |options|.|referenced| flag, 
+wich defaults to `false`. This flag determines whether the |verificationMethod| is embedded directly in 
+`assertionMethod` or referenced through the [=DID document=]&rsquo;s `verificationMethod`. 
+If `options.vmId` is not set, a new identifier is generated automatically.
           </p>
 
           <ol class="algorithm">
             <li>
-Let |keyType| be set to |options|.|keyType| if present, otherwise set to
-`P-256`. The |keyType| value MUST be a valid keyType identifier
-supported by the <a data-cite="CID#Multikey">Multikey</a> specification.
-            </li>
-            <li>
-Generate a new key pair based on |keyType|. Let |keyPair| be the result. If key
-generation fails, an error MUST be raised and SHOULD convey an error type of
-`KEY_GENERATION_ERROR`.
-            </li>
-            <li>
+Create an initial |verificationMethod| [=map=] structure.
+              <ol class="algorithm">
+                <li>
+The |keyPair| algorithm MUST be supported by the <a data-cite="CID#Multikey">Multikey</a> specification.
+Otherwise, an error MUST be raised and SHOULD convey an error type of `UNSUPPORTED_KEY_TYPE`.
+                </li>
+                <li>
 Export the public key from |keyPair| as a <a
 data-cite="CID#Multikey">Multikey</a> value. Let |publicKey| be the result.
+                </li>
+                <li>
+Let |verificationMethod| be a new empty [=map=].
+                </li>
+                <li>
+Set the `type` property of the |verificationMethod| to `Multikey`.
+                </li>
+                <li>
+If |options|.|vmId| is defined then set the `id` property of 
+the |verificationMethod| to the concatenation of the `#` character 
+and the |vmId| value.
+                </li>
+                <li>
+Otherwise, set the `id` property to 
+the concatenation of the `#`  character and the `publicKeyMultibase` 
+representation of the |publicKey|.
+                </li>
+                <li>
+Set the `publicKeyMultibase` property of the |verificationMethod|. to
+`publicKeyMultibase` representation of |publicKey|.
+                </li>
+              </ol>
             </li>
             <li>
-Create an initial [=DID document=] structure ([=map=] |didDocument|) with the
+Create an initial `did:cel` [=DID document=] structure ([=map=] |didDocument|) with the
 following properties:
               <ol class="algorithm">
                 <li>
-Set |didDocument|.`@context` to an array containing the following
-two strings: `https://www.w3.org/ns/did/v1.1` and `https://w3id.org/didcel/v1`.
-                </li>
-                <li>
-Set |didDocument|.`assertionMethod` to an array containing a single
-verification method object with the following properties:
+The `@context` property value MUST be an array starting with two string: 
+`https://www.w3.org/ns/did/v1.1` and `https://w3id.org/didcel/v1`.
                   <ol class="algorithm">
                     <li>
-Set the verification method's `id` value to the concatenation of the
-`#` character and the `publicKeyMultibase` value of the |publicKey|.
+If the |didDocument| does not contain the `@context` property then set its value accordingly.
                     </li>
                     <li>
-Set the verification method's `type` to `Multikey`.
+Otherwise, if `@context` property value does not start with the manadory contexts above,
+an error MUST be raised and SHOULD convey an error type of `INVALID_CONTEXT`.
+                    </li>
+                  </ol>
+                </li>              
+                <li>
+The `heartbeatFrequency` property value MUST conform to ISO 8601 duration format.
+                  <ol class="algorithm">
+                    <li>
+If the |didDocument| does not contain the `heartbeatFrequency` property then set value to default `P3M`.
                     </li>
                     <li>
-Set the verification method's `publicKeyMultibase` to
-|publicKey|.`publicKeyMultibase`.
+Otherwise, if the `heartbeatFrequency` property value does not conform to ISO 8601 duration format,
+an error MUST be raised and SHOULD convey an error type of `INVALID_HEARTBEAT_FREQUENCY`.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+An `assertionMethod` MUST be bound to the |verificationMethod|.
+                  <ol class="algorithm">
+                    <li>
+if |options|.|referenced| is `false`, then add the |verificationMethod| to 
+|didDocument|.`assertionMethod` property.
                     </li>
                     <li>
+Otherwise, add the |verificationMethod| to the |didDocument|.`verificationMethod` property 
+and add |verificationMethod|.`id` to the |didDocument|.`assertionMethod` property.
+                    </li>
+                  </ol>
+                </li>
+                <li>
 Add a <a data-cite="CID#services">service entry</a> where the `type` is
 `CelStorageService` and the `serviceEndpoint` is a list of URLs that the
 controller will use to store the canonical version of the
 [=cryptographic event log=].
-                    </li>
-                  </ol>
                 </li>
               </ol>
-            </li>
             <li>
 Generate the [=DID=] by hashing the canonicalized [=DID document=]:
               <ol class="algorithm">
@@ -688,8 +739,7 @@ Set |didDocument|.`id` to the concatenated value of `did:cel:` and
 the |encodedHash|.
                 </li>
                 <li>
-Set the `controller` property of the verification method in
-|didDocument|.`assertionMethod` to |didDocument|.`id`.
+Set the `controller` property of the |verificationMethod| to |didDocument|.`id`.
                 </li>
               </ol>
             </li>
@@ -734,7 +784,7 @@ Return a [=map=] containing:
 |didDocument|: the completed [=DID document=] with the computed identifier
                 </li>
                 <li>
-|keyPair|: the generated key pair (including secret key material)
+|verificationMethod|: the generated verification method [=map=]
                 </li>
                 <li>
 |cryptographicEventLog|: the initial event log with the create event
