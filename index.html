@@ -748,7 +748,7 @@ Set the `controller` property of the |verificationMethod| to |didDocument|.`id`.
               </ol>
             </li>
             <li>
-Generate the |event| object by setting |event| to a [=map=] where the `operation` property is a [=map=] containing:
+Create the |event| object by setting |event| to a [=map=] where the `operation` property is a [=map=] containing:
               <ol class="algorithm">
                 <li>
 A `type` property with the value `create`.
@@ -785,8 +785,15 @@ Add the |proof| to the `proof` property of the |event|.
 Create the initial [=cryptographic event log=]:
               <ol class="algorithm">
                 <li>
-Let |cryptographicEventLog| be a [=map=] containing a `log` property
-set to a [=list=] containing the |event| object.
+Let |cryptographicEventLog| be a new [=map=].
+                </li>
+                <li>
+Let |eventEntry| be a new [=map=] with `event` property
+set to |event|.
+                </li>
+                <li>
+Set `log` property of the |cryptographicEventLog| to a new 
+[=list=] containg the |eventEntry|.
                 </li>
               </ol>
             </li>
