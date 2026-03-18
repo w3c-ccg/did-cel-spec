@@ -578,9 +578,9 @@ The following section outlines the DID operations for the `did:cel` method.
         <p>
 The create operation establishes a new `did:cel` [=DID document=] with a
 [=self-certifying identifier=] derived from the document's cryptographic hash. This
-operation accepts an initial cryptographic key pair and, optionally, an initial [=DID document=].
+operation accepts a cryptographic key pair and, optionally, an initial [=DID document=].
 It constructs a new `did:cel` event log containing the [=DID document=] updated with
-the public key as an assertion method, and a [=data integrity proof=] for
+the public key bound to an assertion method, and a [=data integrity proof=] for
 the document. This approach ensures that the [=DID=] is intrinsically
 bound to the document's initial state, providing strong integrity guarantees
 without requiring external registration. 
@@ -589,8 +589,9 @@ without requiring external registration.
         <p>
 Once the [=DID document=] is created and signed, a [=cryptographic event log=] (CEL) is
 initialized to track the complete history of operations on this DID. The log's
-first entry is a `create` event that contains the signed [=DID document=] as its
-data payload. This event serves as the cryptographic foundation for all
+first entry is a `create` event that contains the [=DID document=]
+as its data payload and a corresponding [=data integrity proof=].
+This event serves as the cryptographic foundation for all
 subsequent updates, enabling verifiable audit trails and [=witness=] attestation.
 The combination of the [=self-certifying identifier=], cryptographic proof, and
 event log creates a decentralized identifier implementation that requires no
@@ -598,8 +599,8 @@ centralized authority for creation, validation, or resolution.
         </p>
 
         <p>
-The `did:cel` event log identifier is bound to both the initial public key and 
-the initial [=DID document=] state inclusive of that public key.
+The `did:cel` event log identifier  is cryptographically bound to both the
+the public key and the initial [=DID document=] state, including that public key.
         </p>
 
         <p>
@@ -624,14 +625,14 @@ the generated |verificationMethod|, and the initial |cryptographicEventLog|, or 
 Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
           <p>
-The initial |didDocument| may already contain defined relationship and services,
+The initial |didDocument| may already contain defined relationships and services,
 or it may be an empty [=map=].
           </p>
           <p>
-The |options| parameter is an optional [=map=] structure that allows to define a 
+The |options| parameter is an optional [=map=] structure that allows the definition of a
 |verificationMethod| identifier |options|.|vmId| and a boolean |options|.|referenced| flag, 
-wich defaults to `false`. This flag determines whether the |verificationMethod| is embedded directly in 
-`assertionMethod` or referenced through the [=DID document=]&rsquo;s `verificationMethod`. 
+which defaults to `false`. This flag determines whether the |verificationMethod| is embedded directly in 
+the `assertionMethod` or referenced through the [=DID document=]&rsquo;s `verificationMethod`. 
 If `options.vmId` is not set, a new identifier is generated automatically.
           </p>
 
@@ -640,8 +641,8 @@ If `options.vmId` is not set, a new identifier is generated automatically.
 Create an initial |verificationMethod| [=map=] structure.
               <ol class="algorithm">
                 <li>
-The |keyPair| algorithm MUST be supported by the <a data-cite="CID#Multikey">Multikey</a> specification.
-Otherwise, an error MUST be raised and SHOULD convey an error type of `UNSUPPORTED_KEY_TYPE`.
+If the |keyPair| algorithm is not supported by the <a data-cite="CID#Multikey">Multikey</a> specification, 
+then `UNSUPPORTED_KEY_TYPE` error has been detected and processing is aborted.
                 </li>
                 <li>
 Export the public key from |keyPair| as a <a
@@ -654,17 +655,17 @@ Let |verificationMethod| be a new empty [=map=].
 Set the `type` property of the |verificationMethod| to `Multikey`.
                 </li>
                 <li>
-If |options|.|vmId| is defined then set the `id` property of 
+If |options|.|vmId| is exists, then set the `id` property of 
 the |verificationMethod| to the concatenation of the `#` character 
 and the |vmId| value.
                 </li>
                 <li>
-Otherwise, set the `id` property to 
+Otherwise, set the `id` property of |verificationMethod| to 
 the concatenation of the `#`  character and the `publicKeyMultibase` 
 representation of the |publicKey|.
                 </li>
                 <li>
-Set the `publicKeyMultibase` property of the |verificationMethod|. to
+Set the `publicKeyMultibase` property of the |verificationMethod| to
 `publicKeyMultibase` representation of |publicKey|.
                 </li>
               </ol>
@@ -674,35 +675,38 @@ Create an initial `did:cel` [=DID document=] structure ([=map=] |didDocument|) w
 following properties:
               <ol class="algorithm">
                 <li>
-The `@context` property value MUST be an array starting with two string: 
+The `@context` property value MUST be a [=list=] starting with two strings: 
 `https://www.w3.org/ns/did/v1.1` and `https://w3id.org/didcel/v1`.
                   <ol class="algorithm">
                     <li>
 If the |didDocument| does not contain the `@context` property then set its value accordingly.
                     </li>
                     <li>
-Otherwise, if `@context` property value does not start with the manadory contexts above,
-an error MUST be raised and SHOULD convey an error type of `INVALID_CONTEXT`.
-                    </li>
-                  </ol>
-                </li>              
-                <li>
-The `heartbeatFrequency` property value MUST conform to ISO 8601 duration format.
-                  <ol class="algorithm">
-                    <li>
-If the |didDocument| does not contain the `heartbeatFrequency` property then set value to default `P3M`.
-                    </li>
-                    <li>
-Otherwise, if the `heartbeatFrequency` property value does not conform to ISO 8601 duration format,
-an error MUST be raised and SHOULD convey an error type of `INVALID_HEARTBEAT_FREQUENCY`.
+Otherwise, if the `@context` property value does not start with the mandatory contexts above
+then `INVALID_CONTEXT` error has been detected and processing is aborted.
                     </li>
                   </ol>
                 </li>
                 <li>
-An `assertionMethod` MUST be bound to the |verificationMethod|.
+Remove the `id` property from |didDocument| if it exists.
+                </li>             
+                <li>
+The `heartbeatFrequency` property value MUST conform to ISO 8601 duration format.
                   <ol class="algorithm">
                     <li>
-if |options|.|referenced| is `false`, then add the |verificationMethod| to 
+If the |didDocument| does not contain the `heartbeatFrequency` property then set its value to default `P3M`.
+                    </li>
+                    <li>
+Otherwise, if the `heartbeatFrequency` property value does not conform to ISO 8601 duration format
+then `INVALID_HEARTBEAT_FREQUENCY` error has been detected and processing is aborted.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+A |verificationMethod| MUST be bound to the `assertionMethod`.
+                  <ol class="algorithm">
+                    <li>
+If |options|.|referenced| is `false`, then add the |verificationMethod| to 
 |didDocument|.`assertionMethod` property.
                     </li>
                     <li>
@@ -712,7 +716,7 @@ and add |verificationMethod|.`id` to the |didDocument|.`assertionMethod` propert
                   </ol>
                 </li>
                 <li>
-Add a <a data-cite="CID#services">service entry</a> where the `type` is
+Add an entry to the `service` property of the |didDocument| where the `type` is
 `CelStorageService` and the `serviceEndpoint` is a list of URLs that the
 controller will use to store the canonical version of the
 [=cryptographic event log=].
@@ -747,10 +751,10 @@ Set the `controller` property of the |verificationMethod| to |didDocument|.`id`.
 Generate the |event| object by performing the following steps:
               <ol class="algorithm">
                 <li>
-The event object MUST contain a [=map=] with an `operation` property.
+Let |event| be a [=map=] containing an `operation` property.
                 </li>
                 <li>
-The `operation` [=map=] MUST contain:
+Set the `operation` property of |event| to a [=map=] containing:
                   <ol class="algorithm">
                     <li>
 A `type` property with the value `create`.
@@ -765,15 +769,31 @@ A `data` property containing the |didDocument|.
             <li>
 Generate a cryptographic proof for |event| using a cryptosuite
 that is compatible with the generated |keyPair|, such as
-<a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>. Set the
-`proofPurpose` to `assertionMethod`. Add the `proof` to the |event|.
+<a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>:
+              <ol class="algorithm">
+                <li>
+Let |proofOptions| be an empty [=map=].
+                </li>
+                <li>
+Set the `proofPurpose` property of |proofOptions| to `assertionMethod`.
+                </li>
+                <li>
+Set  the `verificationMethod` property of |proofOptions| to |verificationMethod|.id.
+                </li>
+                <li>
+Generate |proof| by passing |proofOptions| and |keyPair| as inputs to the signature suite sign method.
+                </li>
+              </ol>
+            </li>
+            <li>
+Add the |proof| to the `proof` property of the |event|.
             </li>
             <li>
 Create the initial [=cryptographic event log=]:
               <ol class="algorithm">
                 <li>
-Create a new [=map=] |cryptographicEventLog| with a `log` property
-set to an array containing the |event| object.
+Let |cryptographicEventLog| be a [=map=] containing a `log` property
+set to a [=list=] containing the |event| object.
                 </li>
               </ol>
             </li>
@@ -792,7 +812,6 @@ Return a [=map=] containing:
               </ol>
             </li>
           </ol>
-
         </section>
 
       </section>
