@@ -583,7 +583,7 @@ It constructs a new `did:cel` event log containing the [=DID document=] updated 
 the public key bound to an assertion method, and a [=data integrity proof=] for
 the document. This approach ensures that the [=DID=] is intrinsically
 bound to the document's initial state, providing strong integrity guarantees
-without requiring external registration. 
+without requiring external registration.
         </p>
 
         <p>
@@ -671,8 +671,8 @@ Set the `publicKeyMultibase` property of the |verificationMethod| to
               </ol>
             </li>
             <li>
-Create an initial `did:cel` [=DID document=] structure ([=map=] |didDocument|) with the
-following properties:
+Ensure the |didDocument| [=map=] is a valid initial `did:cel` [=DID document=] by 
+applying the following:
               <ol class="algorithm">
                 <li>
 The `@context` property value MUST be a [=list=] starting with two strings: 
@@ -723,7 +723,7 @@ controller will use to store the canonical version of the
                 </li>
               </ol>
             <li>
-Generate the [=DID=] by hashing the canonicalized [=DID document=]:
+Generate the `did:cel` identifier ([=DID=]) by hashing the canonicalized [=DID document=]:
               <ol class="algorithm">
                 <li>
 Canonicalize |didDocument| using JSON Canonicalization Scheme (JCS) as specified
@@ -748,26 +748,18 @@ Set the `controller` property of the |verificationMethod| to |didDocument|.`id`.
               </ol>
             </li>
             <li>
-Generate the |event| object by performing the following steps:
+Generate the |event| object by setting |event| to a [=map=] where the `operation` property is a [=map=] containing:
               <ol class="algorithm">
                 <li>
-Let |event| be a [=map=] containing an `operation` property.
+A `type` property with the value `create`.
                 </li>
                 <li>
-Set the `operation` property of |event| to a [=map=] containing:
-                  <ol class="algorithm">
-                    <li>
-A `type` property with the value `create`.
-                    </li>
-                    <li>
 A `data` property containing the |didDocument|.
-                    </li>
-                  </ol>
                 </li>
               </ol>
             </li>
             <li>
-Generate a cryptographic proof for |event| using a cryptosuite
+Generate a cryptographic proof for the |event| using a cryptosuite
 that is compatible with the generated |keyPair|, such as
 <a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>:
               <ol class="algorithm">
