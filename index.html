@@ -773,12 +773,13 @@ Set the `proofPurpose` property of |proofOptions| to `assertionMethod`.
 Set  the `verificationMethod` property of |proofOptions| to |verificationMethod|.id.
                 </li>
                 <li>
-Generate |proof| by passing |proofOptions| and |keyPair| as inputs to the signature suite sign method.
+Generate |proof| by passing |event| (the document to sign), |proofOptions|,
+and |keyPair| as inputs to the signature suite sign method.
+                </li>
+                <li>
+Add the |proof| to the `proof` property of the |event|.
                 </li>
               </ol>
-            </li>
-            <li>
-Add the |proof| to the `proof` property of the |event|.
             </li>
             <li>
 Create the initial [=cryptographic event log=]:
