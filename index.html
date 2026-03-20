@@ -488,7 +488,7 @@ of a series of transformation functions on the raw public key bytes:
       </p>
 
       <tt>
-did-cel-identifier := did:cel:MULTIBASE(base58-btc, MULTICODEC(sha3-256, JCS(initial-event-log-entry)))
+did-cel-identifier := did:cel:MULTIBASE(base58-btc, MULTIHASH(sha3-256, JCS(genesisDidDocument)))
       </tt>
 
       <p>
