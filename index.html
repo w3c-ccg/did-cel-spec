@@ -589,18 +589,18 @@ without requiring external registration.
         <p>
 Once the [=DID document=] is created and signed, a [=cryptographic event log=] (CEL) is
 initialized to track the complete history of operations on this DID. The log's
-first entry is a `create` event that contains the [=DID document=]
-as its data payload and a corresponding [=data integrity proof=].
-This event serves as the cryptographic foundation for all
+first recorded operation is a `create` event, that contains the [=DID document=]
+as its data payload along with a corresponding [=data integrity proof=].
+This event entry serves as the cryptographic foundation for all
 subsequent updates, enabling verifiable audit trails and [=witness=] attestation.
 The combination of the [=self-certifying identifier=], cryptographic proof, and
-event log creates a decentralized identifier implementation that requires no
+event log establishes a decentralized identifier implementation that requires no
 centralized authority for creation, validation, or resolution.
         </p>
 
         <p>
 The `did:cel` event log identifier  is cryptographically bound to both the
-the public key and the initial [=DID document=] state, including that public key.
+the public key and the genesis [=DID document=], including that public key.
         </p>
 
         <p>
@@ -617,10 +617,10 @@ An example of a [=cryptographic event log=] containing the creation event for a
 
           <p>
 The following algorithm specifies how to create a new `did:cel` [=DID document=]
-with an initial verification method and establish a cryptographic event
+with a new verification method and establish a cryptographic event
 log. The algorithm takes three parameters as input: a cryptographic |keyPair|,
-an optional [=map=] representing the generic initial |didDocument|,
-and |options|. The output is a [=map=] containing the `did:cel` |didDocument|, 
+an optional [=map=] representing the initial |didDocument|,
+and |options|. The output is a [=map=] containing the completed `did:cel` |didDocument|, 
 the generated |verificationMethod|, and the initial |cryptographicEventLog|, or an error. 
 Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
@@ -633,12 +633,12 @@ The |options| parameter is an optional [=map=] structure that allows the definit
 |verificationMethod| identifier |options|.|vmId| and a boolean |options|.|referenced| flag, 
 which defaults to `false`. This flag determines whether the |verificationMethod| is embedded directly in 
 the `assertionMethod` or referenced through the [=DID document=]&rsquo;s `verificationMethod`. 
-If `options.vmId` is not set, a new identifier is generated automatically.
+If |options|.|vmId| is not set, a new identifier is generated automatically.
           </p>
 
           <ol class="algorithm">
             <li>
-Create an initial |verificationMethod| [=map=] structure.
+Create |verificationMethod| [=map=] structure for the assertion:
               <ol class="algorithm">
                 <li>
 If the |keyPair| algorithm is not supported by the <a data-cite="CID#Multikey">Multikey</a> specification, 
@@ -671,7 +671,7 @@ Set the `publicKeyMultibase` property of the |verificationMethod| to
               </ol>
             </li>
             <li>
-Ensure the |didDocument| [=map=] is a valid initial `did:cel` [=DID document=] by 
+Ensure the |didDocument| [=map=] is a valid genesis [=DID document=] by 
 applying the following:
               <ol class="algorithm">
                 <li>
@@ -748,7 +748,7 @@ Set the `controller` property of the |verificationMethod| to |didDocument|.`id`.
               </ol>
             </li>
             <li>
-Create the |event| object by setting |event| to a [=map=] where the `operation` property is a [=map=] containing:
+Create the |event| by setting |event| to a [=map=] where the `operation` property is a [=map=] containing:
               <ol class="algorithm">
                 <li>
 A `type` property with the value `create`.
