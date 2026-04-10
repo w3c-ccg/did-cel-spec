@@ -642,7 +642,7 @@ Create |verificationMethod| [=map=] structure for the assertion:
               <ol class="algorithm">
                 <li>
 If the |keyPair| algorithm is not supported by the <a data-cite="CID#Multikey">Multikey</a> specification, 
-then `UNSUPPORTED_KEY_TYPE` error has been detected and processing is aborted.
+then a `UNSUPPORTED_KEY_TYPE` error MUST be raised and processing is aborted.
                 </li>
                 <li>
 Export the public key from |keyPair| as a <a
