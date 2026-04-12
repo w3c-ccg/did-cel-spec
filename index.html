@@ -920,8 +920,8 @@ and the resulting [=DID Document=].
           <p>
 The algorithm takes three parameters as input: the `did:cel` |identifier|,
 a [=set=] of storage |endpoints|, and an |options| parameter.
-The output is a [=map=] containing the resolved `did:cel` |didDocument|,
-its storage |endpoint|, or an error.
+The output is a [=map=] containing the resolved `did:cel` |logState|, |didDocument|,
+and its storage |endpoint|, or an error.
           </p>
 
           <ol class="algorithm">
@@ -984,8 +984,11 @@ in each log. An implementation MAY define additional sort criteria.
             </li>
             <li>              
 Iterate over |logMap| entries. Let |log| be the entry value and |endpoint|
-the entry key.              
+the entry key. 
               <ol class="algorithm">
+                <li>
+Set |logState| to `active` string value.
+                </li>
                 <li>
 For each |eventEntry| in |log|, verify integrity, liveness, and temporal continuity:
                   <ol class="algorithm">
@@ -1000,7 +1003,8 @@ If |operationType| equals to `create` string value:
                       <ol class="algorithm">
                         <li>
 If it's not the very first |eventEntry| in the |log|, 
-then stop processing this |log| and continue with the next |logMap| entry.
+then the log is corrupted, stop processing this |log| 
+and continue with the next |logMap| entry.
                         </li>
                         <li>
 Set |didDocument| to the value of |event|.`operation`.`data` property.
@@ -1012,7 +1016,14 @@ then stop processing this |log| and continue with the next |logMap| entry.
                         <li>
 Verify that the inception of the `did:cel` identifier:
                           <ol class="algorithm">
+                            <li>
+                              
+                            </li>
                           </ol>
+                        </li>
+                        <li>
+Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency` 
+which MUST conform to ISO 8601 duration format.
                         </li>
                       </ol>
                     </li>
@@ -1025,7 +1036,15 @@ If |event|.`previousEventHash` is not present or does not equal to
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
-if |operationType| equals to `update` string value:
+Let |duration| be the absolute duration between the oldest 
+|event|.`proof`.`created` value and |lastModified| value.
+                        </li>
+                        <li>
+If |duration| is bigger/longer? than |heartbeatFrequency|, then the log is not
+alive, stop processing this |log| and continue with the next |logMap| entry.
+                        </li>
+                        <li>
+If |operationType| equals to `update` string value:
                           <ol class="algorithm">
                             <li>
 Set |didDocument| to the value of |event|.`operation`.`data` property.
@@ -1034,24 +1053,22 @@ Set |didDocument| to the value of |event|.`operation`.`data` property.
 If |didDocument| is not valid [=DID document=], 
 then stop processing this |log| and continue with the next |logMap| entry.
                             </li>
+                            <li>
+Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency` 
+which MUST conform to ISO 8601 duration format.
+                            </li>
+                            <li>
+
+                            </li>
                           </ol>
                         </li>
                         <li>
-else if |operationType| equals to `heartbeat` string value:
-                          <ol class="algorithm">
-                            <li>
-                            </li>
-                          </ol>
+Otherwise, if |operationType| equals to `deactivate` string value then
+set |logState| to the `deactivated` string value.
                         </li>                    
                         <li>
-else if |operationType| equals to `deactivate` string value:
-                          <ol class="algorithm">
-                            <li>
-                            </li>
-                          </ol>
-                        </li>                    
-                        <li>
-Otherwise, an unknown |operationType| has been detected, 
+Otherwise, if |operationType| does not equal to `heartbeat` then
+an unknown |operationType| has been detected, 
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>                    
                       </ol>
@@ -1065,6 +1082,9 @@ Verify the |eventEntry| integrity:
                         <li>
                         </li>
                       </ol>
+                    </li>
+                    <li>
+Set |lastModified| to the oldest |event|.`proof`.`created` value.
                     </li>
                     <li>                      
 Set |previousEventHash| to the result:
@@ -1086,10 +1106,18 @@ character to the encoding.
                   </ol>
                 </li>
                 <li>
+Let |duration| be the absolute duration between the datetime
+when this algorithm is executed and |lastModified| value.
+                </li>
+                <li>
+If |duration| is bigger/longer? than |heartbeatFrequency|, then the log is not
+alive, stop processing this |log| and continue with the next |logMap| entry.
+                </li>
+                <li>
 Verify origin: TBD
                 </li>
                 <li>
-Return a [=map=] containing |didDocument| and |endpoint| as the read algorithm result.
+Return a [=map=] containing |logState|, |didDocument|, and |endpoint| as the read algorithm result.
                 </li>
               </ol>
             </li>
