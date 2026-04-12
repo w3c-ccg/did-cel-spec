@@ -933,11 +933,12 @@ If the |identifier| does not start with the `did:cel:` prefix,
 a `UNSUPPORTED_ID` error MUST be raised and processing aborted.
                 </li>
                 <li>
-Let |did| be the substring of |identifier| corresponding to the DID, 
+Extract |did| as the substring of |identifier| corresponding to the DID, 
 excluding any path, query, or fragment components of the DID URL.                  
                 </li>                
                 <li>
-Let |methodSpecificId| be |did| with the leading `did:cel:` prefix removed.
+Remove the leading `did:cel:` prefix from |did|. 
+Let |methodSpecificId| be the result.
                 </li>                
               </ol>
             </li>
@@ -956,8 +957,8 @@ Let |logMap| be an empty [=map=].
 For each |endpoint| in |endpoints| perform in parallel:
                 <ol class="algorithm">
                   <li>
-Let |location| be the concatenation of the value of |endpoint| 
-and the value of |methodSpecificId|.
+Concatenate the |endpoint| and |methodSpecificId|.
+Let |location| be the result.
                   </li>
                   <li>
 Retrieve the [=cryptographic event log=] from the |location|. 
@@ -1036,8 +1037,9 @@ If |event|.`previousEventHash` is not present or does not equal to
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
-Let |duration| be the absolute duration between the oldest 
+Compute the absolute duration between the oldest  
 |event|.`proof`.`created` value and |lastModified| value.
+Let |duration| be the result.
                         </li>
                         <li>
 If |duration| is bigger/longer? than |heartbeatFrequency|, then the log is not
@@ -1106,8 +1108,9 @@ character to the encoding.
                   </ol>
                 </li>
                 <li>
-Let |duration| be the absolute duration between the datetime
-when this algorithm is executed and |lastModified| value.
+Compute the absolute duration between the oldest  
+|event|.`proof`.`created` value and |lastModified| value.
+Let |duration| be the result.
                 </li>
                 <li>
 If |duration| is bigger/longer? than |heartbeatFrequency|, then the log is not
