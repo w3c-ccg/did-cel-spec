@@ -912,16 +912,16 @@ read operations benefit from the usage of compression. Therefore, all
           <p>
 The read algorithm defines the procedure by which a conforming implementation 
 discovers the [=cryptographic event log=] associated with a given `did:cel` 
-identifier, verifies its integrity and authenticity, and deterministically 
-derives the current state of the `did:cel` identifier and the resulting 
-[=DID Document=].
+identifier, verifies its integrity, authenticity, liveness, temporal continuity, 
+and deterministically  derives the current state of the `did:cel` identifier 
+and the resulting [=DID Document=].
           </p>
 
           <p>
 The algorithm takes three parameters as input: the `did:cel` |identifier|,
 a [=set=] of storage |endpoints|, and an |options| parameter.
 The output is a [=map=] containing the resolved `did:cel` |didDocument|,
-its storage |location|, or an error.
+its storage |endpoint|, or an error.
           </p>
 
           <ol class="algorithm">
@@ -947,8 +947,7 @@ Locate and retrieve the [=cryptographic event log=]:
                 <li>
 If the |identifier| is a DID URL containing a `storage`
 parameter and |options|.`followStorage` is `true`,
-add the storage parameter value to the |endpoints|
-set at the position defined by application-level policy.
+add the storage parameter value to the |endpoints|.
                 </li>
                 <li>
 Let |logMap| be an empty [=ordered map=].
@@ -974,7 +973,7 @@ Add a new entry to |logMap| with key |endpoint| and value |log|.
                 </ol>
                 </li>
                 <li>
-If |logMap| is empty, a `STORAGE_NOT_FOUND` error MUST be raised 
+If |logMap| is empty, a `LOG_NOT_FOUND` error MUST be raised 
 and processing aborted.
                 </li>
                 <li>
@@ -983,8 +982,8 @@ in each log. An implementation MAY define additional sort criteria.
                 </li>
               </ol>
             </li>
-            <li>
-Iterate over |logMap| entries. Let |log| be the entry value and |location|
+            <li>              
+Iterate over |logMap| entries. Let |log| be the entry value and |endpoint|
 the entry key.              
               <ol class="algorithm">
                 <li>
@@ -995,35 +994,113 @@ Let |createEvent| be the first [=event=] in the |log|.
                     </li>
                     <li>
 If the value of |createEvent|.`operation`.`type` property is not `create`, 
-then stop processing this |log| and continue with the next log.
+then stop processing this |log| and continue with the next |logMap| entry.
                     </li>
                     <li>
 Let |didDocument| be the value of |createEvent|.`operation`.`data` property.
                     </li>
                     <li>
 If |didDocument| is not valid [=DID document=], 
-then stop processing this |log| and continue with the next log.
-                    </li>                    
+then stop processing this |log| and continue with the next |logMap| entry.
+                    </li>
+                    <li>
+
+                    </li>
                   </ol>
                 </li>
                 <li>
-Verify |log| integrity, liveness, and temporal continuity:
+For each |eventEntry| in |log|, verify integrity, liveness, and temporal continuity:
                   <ol class="algorithm">
                     <li>
+Let |event| be the value of |eventEntry|.`event` property.
                     </li>
+                    <li>
+If |event|.`previousEventHash` is present and does not equal to 
+|previousEventHash|, then stop processing this |log| and continue 
+with the next |logMap| entry.
+                    </li>
+                    <li>                      
+Set |previousEventHash| to the result:
+                      <ol class="algorithm">
+                        <li>
+Canonicalize |event| using JSON Canonicalization Scheme (JCS)
+as specified in [RFC8785]. Let |canonicalizedEvent| be the result.
+                        </li>
+                        <li>
+Compute the SHA3-256 Multihash of the UTF-8 encoded 
+|canonicalizedEvent|. Let |hash| be the result.
+                        </li>
+                        <li>
+Encode hash using base58-btc encoding, prepending the Multibase (z) 
+character to the encoding. Return the result.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+Set |operationType| to the value of value of |event|.`operation`.`type` property.
+                    </li>
+                    <li>
+If |operationType| equals to `create` string value:
+                      <ol class="algorithm">
+                        <li>
+If it's not the very first |eventEntry| in the |log|, 
+then stop processing this |log| and continue with the next |logMap| entry.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+Otherwise, if |operationType| equals to `update` string value:
+                      <ol class="algorithm">
+                        <li>
+Set |didDocument| to |event|.`operation`.`data`.
+                        </li>
+                        <li>
+If |didDocument| is not valid [=DID document=], 
+then stop processing this |log| and continue with the next |logMap| entry.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+Otherwise, if |operationType| equals to `heartbeat` string value:
+                      <ol class="algorithm">
+                        <li>
+                        </li>
+                      </ol>
+                    </li>                    
+                    <li>
+Otherwise, if |operationType| equals to `deactivate` string value:
+                      <ol class="algorithm">
+                        <li>
+                        </li>
+                      </ol>
+                    </li>                    
+                    <li>
+Otherwise, an unknown |operationType| has been detected, 
+stop processing this |log| and continue with the next |logMap| entry.
+                    </li>                    
+                    <li>
+Verify the |event| integrity by passing the |event| to 
+<a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a> conformant verifier.
+                    </li>
+                    <li>
+Verify the |eventEntry| integrity:
+                      <ol class="algorithm">
+                        <li>
+                        </li>
+                      </ol>
+                    </li>                    
                   </ol>
                 </li>
                 <li>
 Verify origin: TBD
                 </li>
                 <li>
-Return |didDocument| and |location| as the read algorithm result. Stop further processing.
+Return a [=map=] containing |didDocument| and |endpoint| as the read algorithm result.
                 </li>
               </ol>
             </li>
             <li>
-Resolution failed, a `RESOLUTION_FAILED` error MUST be raised 
-and processing aborted.
+Resolution failed, a `RESOLUTION_FAILED` error MUST be raised.
             </li>
           </ol>
 
