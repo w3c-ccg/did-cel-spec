@@ -445,6 +445,16 @@ approach creates an intrinsic binding between the identifier and its content
 without requiring external registration or validation.
           </dd>
 
+          <dt><dfn class="export" data-lt="storageEndpoint">storage endpoint</dfn></dt>
+          <dd>
+A location from which a [=cryptographic event log=] is retrieved. 
+A storage endpoint is identified by a URL and MUST resolve in
+[=cryptographic event log=] associated with a given `did:cel`
+identifier. Multiple storage endpoints SHOULD host identical copies of the same
+log, and implementations MUST treat them as interchangeable sources of data,
+relying on cryptographic verification rather than endpoint trust.
+          </dd>
+
           <dt><dfn class="export" data-lt="witnesses|witnessed|witnessing">witness</dfn></dt>
           <dd>
 An independent entity that provides cryptographic attestation to data in a
