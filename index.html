@@ -853,7 +853,7 @@ and resistance to single points of failure in the DID method infrastructure.
         <h3>Read</h3>
 
         <p>        
-The [=read=] operation retrieves, verifies, and processes the [=cryptographic event log=] 
+The read operation retrieves, verifies, and processes the [=cryptographic event log=] 
 to deterministically produce a conformant [=DID Document=]. This operation is self-certifying 
 and registry-agnostic: implementations establish trust by validating the log&apos;s inception event 
 and subsequent state transitions using their associated cryptographic proofs, without relying 
@@ -895,6 +895,17 @@ read operations benefit from the usage of compression. Therefore, all
           <h4>Document Read Algorithm</h4>
 
           <p>
+The read algorithm defines the procedure by which a conforming implementation
+discovers the [=cryptographic event log=] associated with a given `did:cel`
+identifier, verifies its integrity and authenticity. Deterministically
+derives the current state of the `did:cel` identifier and the resulting [=DID Document=].
+          </p>
+
+          <p>
+The algorithm takes three parameters as input: the `did:cel` |identifier|,
+a [=set=] of storage |endpoints|, and an |options| parameter.
+The output is a [=map=] containing the resolved `did:cel` |didDocument|,
+its storage |location|, or an error.
           </p>
 
           <ol class="algorithm">
