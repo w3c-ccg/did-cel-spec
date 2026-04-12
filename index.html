@@ -950,7 +950,7 @@ parameter and |options|.`followStorage` is `true`,
 add the storage parameter value to the |endpoints|.
                 </li>
                 <li>
-Let |logMap| be an empty [=ordered map=].
+Let |logMap| be an empty [=map=].
                 </li>
                 <li>
 For each |endpoint| in |endpoints| perform in parallel:
@@ -975,12 +975,12 @@ Add a new entry to |logMap| with key |endpoint| and value |log|.
                 <li>
 If |logMap| is empty, a `LOG_NOT_FOUND` error MUST be raised 
 and processing aborted.
-                </li>
-                <li>
+                </li>                
+              </ol>
+            </li>
+            <li>
 Sort the |logMap| in descending order by the number of events contained 
 in each log. An implementation MAY define additional sort criteria.
-                </li>
-              </ol>
             </li>
             <li>              
 Iterate over |logMap| entries. Let |log| be the entry value and |endpoint|
@@ -1090,15 +1090,15 @@ Set |lastModified| to the oldest |event|.`proof`.`created` value.
 Set |previousEventHash| to the result:
                       <ol class="algorithm">
                         <li>
-Canonicalize |event| using JSON Canonicalization Scheme (JCS)
-as specified in [RFC8785]. Let |canonicalizedEvent| be the result.
+Canonicalize |eventEntry| using JSON Canonicalization Scheme (JCS)
+as specified in [RFC8785]. Let |canonicalizedEventEntry| be the result.
                         </li>
                         <li>
 Compute the SHA3-256 Multihash of the UTF-8 encoded 
-|canonicalizedEvent|. Let |hash| be the result.
+|canonicalizedEventEntry|. Let |eventEntryHash| be the result.
                         </li>
                         <li>
-Encode hash using base58-btc encoding, prepending the Multibase (z) 
+Encode |eventEntryHash| using base58-btc encoding, prepending the Multibase (z) 
 character to the encoding.
                         </li>
                       </ol>
