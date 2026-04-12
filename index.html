@@ -852,7 +852,22 @@ and resistance to single points of failure in the DID method infrastructure.
       <section class="normative">
         <h3>Read</h3>
 
+        <p>        
+The [=read=] operation retrieves, verifies, and processes the [=cryptographic event log=] 
+to deterministically produce a conformant [=DID Document=]. This operation is self-certifying 
+and registry-agnostic: implementations establish trust by validating the log&apos;s inception event 
+and subsequent state transitions using their associated cryptographic proofs, without relying 
+on any external authority or specific storage provider.
+        </p>
+
         <p>
+The `did:cel` method supports a hybrid discovery model. While the optional storage parameter 
+provides a high-performance, deterministic path for resolution, it does not represent
+a centralized point of failure. The identity is content-addressable, the same 
+[=cryptographic event log=] SHOULD be replicated across multiple independent providers 
+and peer-to-peer networks to ensure availability, integrity, and resilience against censorship 
+or service disruption. Implementations MUST be capable of retrieving and verifying the log 
+from any conforming source, and MUST NOT rely on a single provider.
         </p>
 
         <pre class="example nohighlight" title="Cryptographic event log where a read is performed"
