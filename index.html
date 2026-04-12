@@ -1014,46 +1014,47 @@ Verify that the inception of the `did:cel` identifier:
                           <ol class="algorithm">
                           </ol>
                         </li>
-                        <li>
-Continue with the next |eventEntry| in the |log|.                          
-                        </li>
                       </ol>
                     </li>
                     <li>
+Otherwise:
+                      <ol class="algorithm">
+                        <li>
 If |event|.`previousEventHash` is not present or does not equal to 
 |previousEventHash|, then event chain is corrupted, 
 stop processing this |log| and continue with the next |logMap| entry.
-                    </li>
-                    <li>
-if |operationType| equals to `update` string value:
-                      <ol class="algorithm">
-                        <li>
-Set |didDocument| to the value of |event|.`operation`.`data` property.
                         </li>
                         <li>
+if |operationType| equals to `update` string value:
+                          <ol class="algorithm">
+                            <li>
+Set |didDocument| to the value of |event|.`operation`.`data` property.
+                            </li>
+                            <li>
 If |didDocument| is not valid [=DID document=], 
 then stop processing this |log| and continue with the next |logMap| entry.
+                            </li>
+                          </ol>
                         </li>
-                      </ol>
-                    </li>
-                    <li>
+                        <li>
 else if |operationType| equals to `heartbeat` string value:
-                      <ol class="algorithm">
+                          <ol class="algorithm">
+                            <li>
+                            </li>
+                          </ol>
+                        </li>                    
                         <li>
-                        </li>
-                      </ol>
-                    </li>                    
-                    <li>
 else if |operationType| equals to `deactivate` string value:
-                      <ol class="algorithm">
+                          <ol class="algorithm">
+                            <li>
+                            </li>
+                          </ol>
+                        </li>                    
                         <li>
-                        </li>
-                      </ol>
-                    </li>                    
-                    <li>
 Otherwise, an unknown |operationType| has been detected, 
 stop processing this |log| and continue with the next |logMap| entry.
-                    </li>                    
+                        </li>                    
+                      </ol>
                     <li>
 Verify the |event| integrity by passing the |event| to 
 <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a> conformant verifier.
