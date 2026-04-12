@@ -987,57 +987,13 @@ Iterate over |logMap| entries. Let |log| be the entry value and |endpoint|
 the entry key.              
               <ol class="algorithm">
                 <li>
-Verify that the inception of the `did:cel` identifier is valid:
-                  <ol class="algorithm">
-                    <li>
-Let |createEvent| be the first [=event=] in the |log|.
-                    </li>
-                    <li>
-If the value of |createEvent|.`operation`.`type` property is not `create`, 
-then stop processing this |log| and continue with the next |logMap| entry.
-                    </li>
-                    <li>
-Let |didDocument| be the value of |createEvent|.`operation`.`data` property.
-                    </li>
-                    <li>
-If |didDocument| is not valid [=DID document=], 
-then stop processing this |log| and continue with the next |logMap| entry.
-                    </li>
-                    <li>
-
-                    </li>
-                  </ol>
-                </li>
-                <li>
 For each |eventEntry| in |log|, verify integrity, liveness, and temporal continuity:
                   <ol class="algorithm">
                     <li>
 Let |event| be the value of |eventEntry|.`event` property.
                     </li>
                     <li>
-If |event|.`previousEventHash` is present and does not equal to 
-|previousEventHash|, then stop processing this |log| and continue 
-with the next |logMap| entry.
-                    </li>
-                    <li>                      
-Set |previousEventHash| to the result:
-                      <ol class="algorithm">
-                        <li>
-Canonicalize |event| using JSON Canonicalization Scheme (JCS)
-as specified in [RFC8785]. Let |canonicalizedEvent| be the result.
-                        </li>
-                        <li>
-Compute the SHA3-256 Multihash of the UTF-8 encoded 
-|canonicalizedEvent|. Let |hash| be the result.
-                        </li>
-                        <li>
-Encode hash using base58-btc encoding, prepending the Multibase (z) 
-character to the encoding. Return the result.
-                        </li>
-                      </ol>
-                    </li>
-                    <li>
-Set |operationType| to the value of value of |event|.`operation`.`type` property.
+Let |operationType| be the value of |event|.`operation`.`type` property.
                     </li>
                     <li>
 If |operationType| equals to `create` string value:
@@ -1046,13 +1002,33 @@ If |operationType| equals to `create` string value:
 If it's not the very first |eventEntry| in the |log|, 
 then stop processing this |log| and continue with the next |logMap| entry.
                         </li>
+                        <li>
+Set |didDocument| to the value of |event|.`operation`.`data` property.
+                        </li>
+                        <li>
+If |didDocument| is not valid [=DID document=], 
+then stop processing this |log| and continue with the next |logMap| entry.
+                        </li>
+                        <li>
+Verify that the inception of the `did:cel` identifier:
+                          <ol class="algorithm">
+                          </ol>
+                        </li>
+                        <li>
+Continue with the next |eventEntry| in the |log|.                          
+                        </li>
                       </ol>
                     </li>
                     <li>
-Otherwise, if |operationType| equals to `update` string value:
+If |event|.`previousEventHash` is not present or does not equal to 
+|previousEventHash|, then event chain is corrupted, 
+stop processing this |log| and continue with the next |logMap| entry.
+                    </li>
+                    <li>
+if |operationType| equals to `update` string value:
                       <ol class="algorithm">
                         <li>
-Set |didDocument| to |event|.`operation`.`data`.
+Set |didDocument| to the value of |event|.`operation`.`data` property.
                         </li>
                         <li>
 If |didDocument| is not valid [=DID document=], 
@@ -1061,14 +1037,14 @@ then stop processing this |log| and continue with the next |logMap| entry.
                       </ol>
                     </li>
                     <li>
-Otherwise, if |operationType| equals to `heartbeat` string value:
+else if |operationType| equals to `heartbeat` string value:
                       <ol class="algorithm">
                         <li>
                         </li>
                       </ol>
                     </li>                    
                     <li>
-Otherwise, if |operationType| equals to `deactivate` string value:
+else if |operationType| equals to `deactivate` string value:
                       <ol class="algorithm">
                         <li>
                         </li>
@@ -1088,7 +1064,24 @@ Verify the |eventEntry| integrity:
                         <li>
                         </li>
                       </ol>
-                    </li>                    
+                    </li>
+                    <li>                      
+Set |previousEventHash| to the result:
+                      <ol class="algorithm">
+                        <li>
+Canonicalize |event| using JSON Canonicalization Scheme (JCS)
+as specified in [RFC8785]. Let |canonicalizedEvent| be the result.
+                        </li>
+                        <li>
+Compute the SHA3-256 Multihash of the UTF-8 encoded 
+|canonicalizedEvent|. Let |hash| be the result.
+                        </li>
+                        <li>
+Encode hash using base58-btc encoding, prepending the Multibase (z) 
+character to the encoding.
+                        </li>
+                      </ol>
+                    </li>
                   </ol>
                 </li>
                 <li>
