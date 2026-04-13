@@ -1087,6 +1087,10 @@ If |didDocument| is not valid [=DID document=],
 then stop processing this |log| and continue with the next |logMap| entry.
                             </li>
                             <li>
+If |didDocument|.`id` is not |did|, 
+stop processing this |log| and continue with the next |logMap| entry.
+                            </li>
+                            <li>
 Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency` 
 which MUST conform to ISO 8601 duration format.
                             </li>
