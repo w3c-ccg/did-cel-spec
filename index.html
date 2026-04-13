@@ -1049,7 +1049,7 @@ Encode |genesisHash| using base58-btc encoding, prepending the
 |encodedGenesisHash| be the result.
                             </li>
                             <li>
-If |methodSpecificId| is not |genesisHash|, then the inception is corrupted;                               
+If |methodSpecificId| is not |encodedGenesisHash|, then the inception is corrupted;                               
 stop processing this |log| and continue with the next |logMap| entry.
                             </li>
                           </ol>
