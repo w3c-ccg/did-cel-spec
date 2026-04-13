@@ -383,26 +383,26 @@ used throughout this specification.
 
           <dt><dfn class="export" data-lt="CEL">cryptographic event log</dfn></dt>
           <dd>
-A [=hashlinked=] chain of events representing the complete set
-of state transitions and operations performed on a document,
-with each event cryptographically tied to the preceding event.
+A [=hashlinked=] chain of [=events=] representing the complete set
+of state transitions and [=operations=] performed on a document,
+with each [=event=] cryptographically tied to the preceding [=event=].
 The log is an append-only ordered collection preserving the
-sequence of recorded events.
+sequence of recorded [=events=].
           </dd>
 
           <dt><dfn class="export" data-lt="event">event</dfn></dt>
           <dd>
 A self-contained object representing a single change of state
-or observable occurrence. An event records an operation in the
-cryptographic event log. Its integrity is asserted by the
+or observable occurrence. An event records an [=operation=] in the
+[=cryptographic event log=]. Its integrity is asserted by the
 DID controller.
           </dd>
 
           <dt><dfn class="export" data-lt="eventEntry">event entry</dfn></dt>
           <dd>
-A container object within a log that holds a single event. Its
+A container object within a log that holds a single [=event=]. Its
 existence is cryptographically attested by oblivious
-witnesses.
+[=witnesses=].
           </dd>
 
           <dt><dfn class="export" data-lt="genesisDidDocument">genesis DID document</dfn>
@@ -423,19 +423,19 @@ pointed to has not been modified since the link was created.
           <dd>
 A deterministic state transition instruction that specifies how to
 update a DID Document and its lifecycle. The operation is 
-the core semantic content of an event and defines the intended state change.
+the core semantic content of an [=event=] and defines the intended state change.
           </dd>
 
           <dt><dfn class="export" data-lt="operationData">operation data</dfn></dt>
           <dd>
-The payload of an operation containing the concrete document
+The payload of an [=operation=] containing the concrete document
 being created, updated, or otherwise affected.
           </dd>
 
           <dt><dfn class="export" data-lt="proof">proof</dfn></dt>
           <dd>
-A cryptographic object associated with an event that provides
-integrity and authenticity guarantees for the event.
+A cryptographic object associated with an [=event=] that provides
+integrity and authenticity guarantees for the [=event=].
           </dd>
 
           <dt><dfn class="export">self-certifying identifier</dfn></dt>
