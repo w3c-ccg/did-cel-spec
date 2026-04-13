@@ -930,7 +930,7 @@ Extract the commitment:
               <ol class="algorithm">
                 <li>
 If the |identifier| does not start with the `did:cel:` prefix,
-a `UNSUPPORTED_ID` error MUST be raised and processing aborted.
+an `UNSUPPORTED_ID` error MUST be raised and processing MUST be aborted.
                 </li>
                 <li>
 Extract |did| as the substring of |identifier| corresponding to the DID, 
@@ -966,7 +966,7 @@ If retrieval is unsuccessful, stop processing this |endpoint|.
 Otherwise, let |response| be the result.
                   </li>
                   <li>
-Let |log| be the result of parsing |response| as a [=cryptographic event log=].                    
+Parse |response| as a [=cryptographic event log=]. Let |log| be the result.
                   </li>
                   <li>
 Add a new entry to |logMap| with key |endpoint| and value |log|.                    
@@ -974,8 +974,7 @@ Add a new entry to |logMap| with key |endpoint| and value |log|.
                 </ol>
                 </li>
                 <li>
-If |logMap| is empty, a `LOG_NOT_FOUND` error MUST be raised 
-and processing aborted.
+If |logMap| is empty, a `LOG_NOT_FOUND` error MUST be raised and processing MUST be aborted.
                 </li>                
               </ol>
             </li>
@@ -1019,12 +1018,12 @@ If |didDocument| is not valid [=DID document=],
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
-Verify the inception of the `did:cel` identifier:
-                          <ol class="algorithm">
-                            <li>
 If |didDocument|.`id` is not |did|, 
 stop processing this |log| and continue with the next |logMap| entry.
-                            </li>
+                        </li>
+                        <li>
+Verify the inception of the `did:cel` identifier:
+                          <ol class="algorithm">
                             <li>
 Clone |didDocument| as |genesisDidDocument|.                              
                             </li>
