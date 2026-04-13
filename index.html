@@ -578,7 +578,7 @@ The following section outlines the DID operations for the `did:cel` method.
         <p>
 The create operation establishes a new `did:cel` [=DID document=] with a
 [=self-certifying identifier=] derived from the document's cryptographic hash. This
-operation accepts a cryptographic key pair and, optionally, an initial [=DID document=].
+operation accepts a cryptographic key pair and an OPTIONAL initial [=DID document=].
 It constructs a new `did:cel` event log containing the [=DID document=] updated with
 the public key bound to an assertion method, and a [=data integrity proof=] for
 the document. This approach ensures that the [=DID=] is intrinsically
@@ -600,7 +600,7 @@ centralized authority for creation, validation, or resolution.
 
         <p>
 The `did:cel` event log identifier  is cryptographically bound to both the
-the public key and the genesis [=DID document=], including that public key.
+the public key and the genesis [=DID document=], which includes that public key.
         </p>
 
         <p>
@@ -625,7 +625,7 @@ the generated |verificationMethod|, and the initial |cryptographicEventLog|, or 
 Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
           <p>
-The initial |didDocument| can already contain defined relationships and services,
+The initial |didDocument| can contain previously defined relationships and services,
 or it can be an empty [=map=].
           </p>
           <p>
@@ -641,8 +641,9 @@ If |options|.|vmId| is not set, a new identifier is generated automatically.
 Create |verificationMethod| [=map=] structure for the assertion:
               <ol class="algorithm">
                 <li>
-If the |keyPair| algorithm is not supported by the <a data-cite="CID#Multikey">Multikey</a> specification, 
-then a `UNSUPPORTED_KEY_TYPE` error MUST be raised and processing is aborted.
+If the |keyPair| algorithm is not supported by the <a data-cite="CID#Multikey">Multikey</a>
+specification, then an `UNSUPPORTED_KEY_TYPE` error MUST be raised and processing MUST be aborted.
+
                 </li>
                 <li>
 Export the public key from |keyPair| as a <a
@@ -655,13 +656,13 @@ Let |verificationMethod| be a new empty [=map=].
 Set the `type` property of the |verificationMethod| to `Multikey`.
                 </li>
                 <li>
-If |options|.|vmId| is exists, then set the `id` property of 
+If |options|.|vmId| exists, then set the `id` property of 
 the |verificationMethod| to the concatenation of the `#` character 
 and the |vmId| value.
                 </li>
                 <li>
 Otherwise, set the `id` property of |verificationMethod| to 
-the concatenation of the `#`  character and the `publicKeyMultibase` 
+the concatenation of the `#` character and the `publicKeyMultibase` 
 representation of the |publicKey|.
                 </li>
                 <li>
@@ -672,18 +673,18 @@ Set the `publicKeyMultibase` property of the |verificationMethod| to
             </li>
             <li>
 Verify that the |didDocument| [=map=] is a valid genesis [=DID document=] by 
-ensuring the following:
+taking the following steps:
               <ol class="algorithm">
                 <li>
-The `@context` property value MUST be a [=list=] starting with two strings: 
+Confirm that the `@context` property value is a [=list=] starting with two strings: 
 `https://www.w3.org/ns/did/v1.1` and `https://w3id.org/didcel/v1`.
                   <ol class="algorithm">
                     <li>
 If the |didDocument| does not contain the `@context` property then set its value accordingly.
                     </li>
                     <li>
-Otherwise, if the `@context` property value does not start with the mandatory contexts above
-then an `INVALID_CONTEXT` error MUST be raised and processing is aborted.
+Otherwise, if the `@context` property value does not start with the mandatory contexts listed
+above, then an `INVALID_CONTEXT` error MUST be raised and processing MUST be aborted.
                     </li>
                   </ol>
                 </li>
@@ -691,23 +692,23 @@ then an `INVALID_CONTEXT` error MUST be raised and processing is aborted.
 Remove the `id` property from |didDocument| if it exists.
                 </li>             
                 <li>
-The `heartbeatFrequency` property value MUST conform to ISO 8601 duration format.
+Confirm that the `heartbeatFrequency` property value conforms to ISO 8601 duration format.
                   <ol class="algorithm">
                     <li>
-If the |didDocument| does not contain the `heartbeatFrequency` property then set 
+If the |didDocument| does not contain the `heartbeatFrequency` property, then set 
 its value to `P3M`.
                     </li>
                     <li>
-Otherwise, if the `heartbeatFrequency` property value does not conform to ISO 8601 duration format
-then `INVALID_HEARTBEAT_FREQUENCY` error has been detected and processing is aborted.
+Otherwise, if the `heartbeatFrequency` property value does not conform to ISO 8601 duration format,
+then `INVALID_HEARTBEAT_FREQUENCY` error MUST be raised and processing MUST be aborted.
                     </li>
                   </ol>
                 </li>
                 <li>
-A |verificationMethod| MUST be bound to the `assertionMethod`.
+Confirm that a |verificationMethod| is bound to the `assertionMethod`.
                   <ol class="algorithm">
                     <li>
-If |options|.|referenced| is `false`, then add the |verificationMethod| to 
+If |options|.|referenced| is `false`, then add the |verificationMethod| to the
 |didDocument|.`assertionMethod` property.
                     </li>
                     <li>
