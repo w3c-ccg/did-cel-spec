@@ -1036,8 +1036,8 @@ Remove all `controller` properties from the |genesisDidDocument|
 where the value is |did|.
                             </li>
                             <li>
-Canonicalize |genesisDidDocument| using JSON Canonicalization Scheme (JCS) as specified
-the |canonicalizedDocument|.
+Canonicalize |genesisDidDocument| using JSON Canonicalization Scheme (JCS)
+as specified in [RFC8785]. Let |canonicalizedDocument| be the result.
                             </li>
                             <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
@@ -1115,7 +1115,7 @@ Verify the |event| integrity:
                       <ol class="algorithm">
                         <li>
 Verify the |event| with a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a> 
-conformant verifier. If the verification fails, then the [=event entry=] is not consistent;
+conformant verifier. If the verification fails, then the [=event=] is not consistent;
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
