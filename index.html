@@ -920,8 +920,8 @@ and the resulting [=DID Document=].
           <p>
 The algorithm takes three parameters as input: the `did:cel` |identifier|,
 a [=set=] of storage |endpoints|, and an |options| parameter.
-The output is a [=map=] containing the resolved `did:cel` |logState|, |didDocument|,
-and its storage |endpoint|, or an error.
+The output is a [=map=] containing the resolved `did:cel` |didDocument|
+and its storage |endpoint|.
           </p>
 
           <ol class="algorithm">
@@ -1154,6 +1154,10 @@ stop processing this |log| and continue with the next |logMap| entry.
                       </ol>
                     </li>
                     <li>
+If |logState| is `deactivated` string value,
+a `DEACTIVATED` error MUST be raised and processing MUST be aborted.                      
+                    </li>
+                    <li>
 Let |lastModified| be the |eventCreated| value.
                     </li>
                     <li>                      
@@ -1189,7 +1193,7 @@ in the |didDocument| `service` section, then the |log| origin is not approved;
 stop processing this |log| and continue with the next |logMap| entry.
                 </li>
                 <li>
-Return a [=map=] containing |logState|, |didDocument|, and |endpoint| as the read algorithm result.
+Return a [=map=] containing |didDocument| and |endpoint| as the read algorithm result.
                 </li>
               </ol>
             </li>
