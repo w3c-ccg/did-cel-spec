@@ -1102,7 +1102,8 @@ verifier that MUST ensure:
 `proof`.`controller` MUST be equal to |didDocument|.`id`.
                         </li>
                         <li>
-`proof`.`created` MUST be earlier than |ttl|.
+|eventCreated| MUST be earlier than or equal to `proof`.`created`, 
+and `proof`.`created` MUST be earlier than |ttl|.
                         </li>
                         <li>
 `proof`.`verificationMethod` MUST resolve against |didDocument|.                          
@@ -1140,7 +1141,8 @@ verifier that MUST ensure:
 `proof`.`proofPurpose` MUST  be the string value `assertionMethod`.
                             </li>
                             <li>
-`proof`.`created` MUST be earlier than |ttl|.
+|eventCreated| MUST be earlier than `proof`.`created`, 
+and `proof`.`created` MUST be earlier than |ttl|.
                             </li>
                             <li>
 A minimum number of valid witness proofs, as specified by the application logic, 
