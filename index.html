@@ -1160,12 +1160,10 @@ and `proof`.`created` MUST be earlier than |ttl|.
                         </li>
                         <li>
 `proof`.`verificationMethod` MUST resolve against |didDocument|.
-Let |verificationMethod| be the result.
+ Let |verificationMethod| be the result.
                         </li>
                         <li>
-                        <li>
 |verificationMethod|.`controller` MUST be equal to |didDocument|.`id`.
-                        </li>                          
                         </li>
                       </ol>
 If the |event| verification fails, the [=event=] is not verified;
