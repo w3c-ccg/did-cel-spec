@@ -1041,7 +1041,7 @@ where the value is |did|.
                             </li>
                             <li>
 Canonicalize |genesisDidDocument| using JSON Canonicalization Scheme (JCS)
-as specified in [RFC8785]. Let |canonicalizedDocument| be the result.
+as specified in [[RFC8785]]. Let |canonicalizedDocument| be the result.
                             </li>
                             <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
@@ -1081,7 +1081,7 @@ If |duration| is greater than |heartbeatFrequency|, the log is not
 alive; stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
-If |operationType| is not one of `heartbeat`, or `update`, or `deactivate` string value,
+If |operationType| is not one of the string values `heartbeat`, `update`, or `deactivate`,
 an unknown |operationType| has been detected;
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>                    
@@ -1091,7 +1091,7 @@ stop processing this |log| and continue with the next |logMap| entry.
 Let |ttl| be |eventCreated| + |heartbeatFrequency|.
                     </li>                    
                     <li>
-Verify the |event| integrity and authenticity by passing the |event| 
+Verify the integrity and authenticity of |event| by passing the |event| 
 to a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>-conformant
 verifier that MUST ensure:
                       <ol class="algorithm">
@@ -1112,18 +1112,27 @@ If the |event| verification fails, the [=event=] is not verified;
 stop processing this |log| and continue with the next |logMap| entry.
                     </li>
                     <li>
-Verify the |eventEntry| integrity and authenticity  by 
+Verify the temporal validity of |eventEntry| by 
 taking the following steps:
                       <ol class="algorithm">
                         <li>
-Let |eventEntryDigest| be the result of  ...
+Canonicalize |event| using the JSON Canonicalization Scheme 
+(JCS) as specified in [[RFC8785]]. Let canonicalizedEvent be the result.
                         </li>
                         <li>
-Let |witnessedDocument| be a [=map=] containing `digestMultibase` property
-set to |eventEntryDigest| and `proof` property set to |eventEntry|.`proof` value.
+Compute the SHA3-256 Multihash of the UTF-8 encoded |canonicalizedEvent|. 
+Let |hash| be the result.
                         </li>
                         <li>
-Verify the |eventEntry| integrity and authenticity by passing the |witnessedDocument| 
+Encode |hash| using base58-btc encoding, prepending the Multibase (z) 
+character to the encoding. Let |digestMultibase| be the result.                                                  
+                        </li>
+                        <li>
+Let |witnessedDocument| be a [=map=] containing the `digestMultibase` property
+and `proof` property set to |eventEntry|.`proof` value.
+                        </li>
+                        <li>
+Verify the integrity and authenticity of |eventEntry| by passing the |witnessedDocument| 
 to a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>-conformant
 verifier that MUST ensure:
                           <ol class="algorithm">
@@ -1134,7 +1143,8 @@ verifier that MUST ensure:
 `proof`.`created` MUST be earlier than |ttl|.
                             </li>
                             <li>
-A minimum number of valid witness proofs MUST be enforced as specified by application logic.                              
+A minimum number of valid witness proofs, as specified by the application logic, 
+MUST be verified.
                             </li>
                           </ol>
                         </li>
