@@ -1155,14 +1155,17 @@ verifier that MUST ensure:
 `proof`.`proofPurpose` MUST  be the string value `assertionMethod`.
                         </li>
                         <li>
-`proof`.`controller` MUST be equal to |didDocument|.`id`.
-                        </li>
-                        <li>
 |eventCreated| MUST be earlier than or equal to `proof`.`created`,
 and `proof`.`created` MUST be earlier than |ttl|.
                         </li>
                         <li>
 `proof`.`verificationMethod` MUST resolve against |didDocument|.
+Let |verificationMethod| be the result.
+                        </li>
+                        <li>
+                        <li>
+Resolved |verificationMethod|.`controller` MUST be equal to |didDocument|.`id`.
+                        </li>                          
                         </li>
                       </ol>
 If the |event| verification fails, the [=event=] is not verified;
