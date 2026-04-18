@@ -987,27 +987,32 @@ Iterate over |logMap| entries. Let |log| be the entry value and |endpoint|
 the entry key. 
               <ol class="algorithm">
                 <li>
-Set |logState| to `active` string value.
-                </li>                
-                <li>
 For each |eventEntry| in |log|, verify integrity, liveness, and temporal continuity:
                   <ol class="algorithm">
                     <li>
-Let |event| be the value of |eventEntry|.`event` property.
+If |eventEntry|.`proof` is not present or is empty,
+stop processing this |log| and continue with the next |logMap| entry.
+                    </li>
+                    <li>
+Let |event| be the value of |eventEntry|.`event`.
+                    </li>
+                    <li>
+If |event|.`proof` is not present or is empty,
+stop processing this |log| and continue with the next |logMap| entry.
                     </li>
                     <li>
 Select the oldest |event|.`proof`.`created` value.
 Let |eventCreated| be the result.                    
                     </li>
                     <li>
-Let |operationType| be the value of |event|.`operation`.`type` property.
+Let |operationType| be the value of |event|.`operation`.`type`.
                     </li>
                     <li>
 If |operationType| is the `create` string value:
                       <ol class="algorithm">
                         <li>
 If it's not the very first |eventEntry| in the |log|, 
-then the log is corrupted; stop processing this |log| 
+the log is corrupted; stop processing this |log| 
 and continue with the next |logMap| entry.
                         </li>
                         <li>
@@ -1076,11 +1081,7 @@ If |duration| is greater than |heartbeatFrequency|, the log is not
 alive; stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
-If |operationType| is the `deactivate` string value, then
-set |logState| to the `deactivated` string value.
-                        </li>                    
-                        <li>
-Otherwise, if |operationType| is not the `heartbeat` or `update` string value,
+If |operationType| is not one of `heartbeat`, or `update`, or `deactivate` string value,
 an unknown |operationType| has been detected;
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>                    
@@ -1142,7 +1143,7 @@ If the |witnessedDocument| verification fails, the |eventEntry| is not witnessed
 stop processing this |log| and continue with the next |logMap| entry.
                     </li>
                     <li>
-If |logState| is `deactivated` string value,
+If |operationType| is the `deactivate` string value,
 a `DEACTIVATED` error MUST be raised and processing MUST be aborted.                      
                     </li>
                     <li>
