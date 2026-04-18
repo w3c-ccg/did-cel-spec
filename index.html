@@ -1072,36 +1072,16 @@ Compute the absolute duration between |eventCreated| and |lastModified| values.
 Let |duration| be the result.
                         </li>
                         <li>
-If |duration| is greater than |heartbeatFrequency|, then the log is not
+If |duration| is greater than |heartbeatFrequency|, the log is not
 alive; stop processing this |log| and continue with the next |logMap| entry.
                         </li>
                         <li>
-If |operationType| is the `update` string value:
-                          <ol class="algorithm">
-                            <li>
-Set |didDocument| to the value of |event|.`operation`.`data` property.
-                            </li>
-                            <li>
-If |didDocument| is not valid [=DID document=], 
-then stop processing this |log| and continue with the next |logMap| entry.
-                            </li>
-                            <li>
-If |didDocument|.`id` is not |did|, 
-stop processing this |log| and continue with the next |logMap| entry.
-                            </li>
-                            <li>
-Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency` 
-which MUST conform to ISO 8601 duration format.
-                            </li>
-                          </ol>
-                        </li>
-                        <li>
-Otherwise, if |operationType| is the `deactivate` string value, then
+If |operationType| is the `deactivate` string value, then
 set |logState| to the `deactivated` string value.
                         </li>                    
                         <li>
-Otherwise, if |operationType| is not the `heartbeat` string value,
-then an unknown |operationType| has been detected;
+Otherwise, if |operationType| is not the `heartbeat` or `update` string value,
+an unknown |operationType| has been detected;
 stop processing this |log| and continue with the next |logMap| entry.
                         </li>                    
                       </ol>
@@ -1110,52 +1090,77 @@ stop processing this |log| and continue with the next |logMap| entry.
 Let |ttl| be |eventCreated| + |heartbeatFrequency|.
                     </li>                    
                     <li>
-Verify the |event| integrity:
+Verify the |event| integrity and authenticity by passing the |event| 
+to a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>-conformant
+verifier that MUST ensure:
                       <ol class="algorithm">
                         <li>
-Verify the |event| with a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a> 
-conformant verifier. If the verification fails, then the [=event=] is not consistent;
-stop processing this |log| and continue with the next |logMap| entry.
+`proof`.`proofPurpose` MUST  be the string value `assertionMethod`.
                         </li>
                         <li>
-For each |proof| in |event|.`proof`:
-                          <ol class="algorithm">
-                            <li>
-If |proof|.`controller` is not |did|, 
-stop processing this |log| and continue with the next |logMap| entry.
-                            </li>
-                            <li>
-If |proof|.`created` is after |ttl|, then the proof is invalid;
-stop processing this |log| and continue with the next |logMap| entry.
-                            </li>
-                          </ol>
+`proof`.`controller` MUST be equal to |didDocument|.`id`.
+                        </li>
+                        <li>
+`proof`.`created` MUST be earlier than |ttl|.
+                        </li>
+                        <li>
+`proof`.`verificationMethod` MUST resolve against |didDocument|.                          
                         </li>
                       </ol>
+If the |event| verification fails, the [=event=] is not verified;
+stop processing this |log| and continue with the next |logMap| entry.
                     </li>
                     <li>
-Verify the |eventEntry| integrity:
+Verify the |eventEntry| integrity and authenticity  by 
+taking the following steps:
                       <ol class="algorithm">
                         <li>
-Verify the |eventEntry| with a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>
-conformant verifier. An implementation MUST use application logic to determine 
-the minimum number of witness proofs to pass. If the verification fails, then 
-the [=event entry=] is not consistent;
-stop processing this |log| and continue with the next |logMap| entry.
+Let |eventEntryDigest| be the result of  ...
                         </li>
                         <li>
-For each |proof| in |eventEntry|.`proof`:
+Let |witnessedDocument| be a [=map=] containing `digestMultibase` property
+set to |eventEntryDigest| and `proof` property set to |eventEntry|.`proof` value.
+                        </li>
+                        <li>
+Verify the |eventEntry| integrity and authenticity by passing the |witnessedDocument| 
+to a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>-conformant
+verifier that MUST ensure:
                           <ol class="algorithm">
                             <li>
-If |proof|.`created` is after |ttl|, then the proof is invalid;
-stop processing this |log| and continue with the next |logMap| entry.
+`proof`.`proofPurpose` MUST  be the string value `assertionMethod`.
+                            </li>
+                            <li>
+`proof`.`created` MUST be earlier than |ttl|.
+                            </li>
+                            <li>
+A minimum number of valid witness proofs MUST be enforced as specified by an application logic.
                             </li>
                           </ol>
                         </li>
                       </ol>
+If the |witnessedDocument| verification fails, the |eventEntry| is not witnessed;
+stop processing this |log| and continue with the next |logMap| entry.
                     </li>
                     <li>
 If |logState| is `deactivated` string value,
 a `DEACTIVATED` error MUST be raised and processing MUST be aborted.                      
+                    </li>
+                    <li>
+If |operationType| is the `update` string value:
+                      <ol class="algorithm">
+                        <li>
+Set |didDocument| to the value of |event|.`operation`.`data` property.
+                        </li>
+                        <li>
+If |didDocument| is not valid [=DID document=], 
+or |didDocument|.`id` is not |did|,
+stop processing this |log| and continue with the next |logMap| entry.
+                        </li>
+                        <li>
+Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency` 
+which MUST conform to ISO 8601 duration format.
+                        </li>
+                      </ol>
                     </li>
                     <li>
 Let |lastModified| be the |eventCreated| value.
