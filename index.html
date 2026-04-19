@@ -1071,11 +1071,7 @@ Set |didDocument| to the value of |event|.`operation`.`data` property.
                         </li>
                         <li>
 If |didDocument| is not valid [=DID document=],
-store an `INVALID_DOCUMENT` error in |eventStatus| under the key |eventEntryHash|,
-continue with the next |logMap| entry.
-                        </li>
-                        <li>
-If |didDocument|.`id` is not |did|,
+or |didDocument|.`id` is not |did|,
 store an `INVALID_DOCUMENT` error in |eventStatus| under the key |eventEntryHash|,
 continue with the next |logMap| entry.
                         </li>
@@ -1232,10 +1228,10 @@ which MUST conform to ISO 8601 duration format.
                       </ol>
                     </li>
                     <li>
-Let |lastModified| be the |eventCreated| value.
+Set |lastModified| be the |eventCreated|.
                     </li>
                     <li>
-Set |previousEventHash| be the |eventEntryHash| value.
+Set |previousEventHash| be the |eventEntryHash|.
                     </li>
                     <li>
 Store a [=map=] containing |didDocument| and |lastModified| in
@@ -1245,7 +1241,7 @@ Store a [=map=] containing |didDocument| and |lastModified| in
                 </li>
                 <li>
 Compute the absolute duration between the current execution datetime 
-and the |lastModified| value. Let |duration| be the result.
+and |lastModified|. Let |duration| be the result.
                 </li>
                 <li>
 If |duration| is greater than |heartbeatFrequency|, then the log is not
