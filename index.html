@@ -853,6 +853,36 @@ and resistance to single points of failure in the DID method infrastructure.
         <h3>Read</h3>
 
         <p>
+The read operation retrieves, verifies, and processes the
+[=cryptographic event log=]  to deterministically produce a conformant
+[=DID Document=]. This operation is self-certifying  and registry-agnostic:
+implementations establish trust by validating the log&apos;s inception event
+and subsequent state transitions using their associated cryptographic proofs,
+without relying on any external authority or specific storage provider.
+        </p>
+
+        <p>
+The `did:cel` method supports a hybrid discovery model. The identity is
+content-addressable, and the same [=cryptographic event log=] SHOULD be
+replicated across multiple independent providers and peer-to-peer networks
+to ensure availability, integrity, and resilience against censorship or
+service disruption. The optional storage DID URL parameter provides a deterministic,
+high-performance resolution path but does not represent a centralized point
+of failure.
+        </p>
+
+        <p>
+Implementations MUST be capable of retrieving and verifying the
+[=cryptographic event log=] from multiple conforming sources and MUST NOT
+rely on a single provider.
+        </p>
+
+        <p>
+Multiple [=cryptographic event log=] candidates are obtained from conforming
+sources and are treated as equivalent inputs. Implementations MUST apply
+deterministic selection by evaluating logs in order of validity, based on
+verification and subsequent state transitions, until a valid
+log is identified.
         </p>
 
         <pre class="example nohighlight" title="Cryptographic event log where a read is performed"
@@ -880,13 +910,368 @@ read operations benefit from the usage of compression. Therefore, all
           <h4>Document Read Algorithm</h4>
 
           <p>
+The read algorithm defines the procedure by which a conforming implementation
+discovers the [=cryptographic event log=] associated with a given `did:cel`
+identifier, verifies its integrity, authenticity, liveness, temporal continuity,
+and deterministically derives the current state of the `did:cel` identifier
+and the resulting [=DID Document=].
+          </p>
+
+          <p>
+The algorithm takes three parameters as input: the `did:cel` |identifier|,
+a [=set=] of storage |endpoints|, and an |options| parameter.
+The output is a [=map=] containing the resolved `did:cel` |didDocument|
+and its storage |endpoint|.
           </p>
 
           <ol class="algorithm">
             <li>
+Extract the commitment:
+              <ol class="algorithm">
+                <li>
+If the |identifier| does not start with the `did:cel:` prefix,
+an `UNSUPPORTED_ID` error MUST be raised and processing MUST be aborted.
+                </li>
+                <li>
+Extract |did| as the substring of |identifier| corresponding to the DID,
+excluding any path, query, or fragment components of the DID URL.
+                </li>
+                <li>
+Remove the leading `did:cel:` prefix from |did|.
+Let |methodSpecificId| be the result.
+                </li>
+              </ol>
+            </li>
+            <li>
+Initialize |logMap| to an empty [=map=].
+            </li>
+            <li>
+Locate and retrieve the [=cryptographic event log=]:
+              <ol class="algorithm">
+                <li>
+If the |identifier| is a DID URL containing a `storage`
+parameter and |options|.`followStorage` is `true`,
+add the storage parameter value to the |endpoints|.
+                </li>
+                <li>
+For each |endpoint| in |endpoints| perform in parallel:
+                  <ol class="algorithm">
+                    <li>
+Concatenate the |endpoint| and |methodSpecificId|.
+Let |location| be the result.
+                    </li>
+                    <li>
+Retrieve the [=cryptographic event log=] from the |location|.
+If retrieval is unsuccessful, stop processing this |endpoint|.
+Otherwise, let |response| be the result.
+                    </li>
+                    <li>
+Parse |response| as a [=cryptographic event log=]. Let |log| be the result.
+                    </li>
+                    <li>
+Add a new entry to |logMap| with key |endpoint| and value |log|.
+                    </li>
+                  </ol>
+                </li>
+              </ol>
+            </li>
+            <li>
+If |logMap| is an empty [=map=],
+a `LOG_NOT_FOUND` error MUST be raised and processing MUST be aborted.
+            </li>
+            <li>
+Sort the |logMap| in descending order by the number of events contained
+in each log. An implementation MAY define additional sort criteria.
+            </li>
+            <li>
+Initialize |eventStatus| to an empty [=map=].
+            </li>
+            <li>
+Iterate over |logMap| entries. Let |log| be the entry value and |endpoint|
+the entry key.
+              <ol class="algorithm">
+                <li>
+For each |eventEntry| in |log|, verify integrity, liveness, and temporal continuity:
+                  <ol class="algorithm">
+                    <li>
+Let |event| be the value of |eventEntry|.`event`.
+                    </li>
+                    <li>
+If |previousEventHash| is not defined and |event|.`previousEventHash` is present,
+or |previousEventHash| is defined and is not |event|.`previousEventHash`,
+the event chain is corrupted;
+continue with the next |logMap| entry.
+                    </li>
+                    <li>
+Set |eventEntryHash| to the result of the following:
+                      <ol class="algorithm">
+                        <li>
+Canonicalize |eventEntry| using JSON Canonicalization Scheme (JCS)
+as specified in [[RFC8785]]. Let |canonicalizedEventEntry| be the result.
+                        </li>
+                        <li>
+Compute the SHA3-256 Multihash of the UTF-8 encoded
+|canonicalizedEventEntry|. Let |eventEntryHash| be the result.
+                        </li>
+                        <li>
+Encode |eventEntryHash| using base58-btc encoding, prepending the Multibase (z)
+character to the encoding.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+If |eventStatus| contains |eventEntryHash|, perform the following steps:
+                      <ol class="algorithm">
+                        <li>
+Let |status| be the value stored under the |eventEntryHash| key in |eventStatus|.
+                        </li>
+                        <li>
+If |status| is an error,
+continue with the next |logMap| entry.
+                        </li>
+                        <li>
+Set |lastModified| to |status|.`lastModified`.
+                        </li>
+                        <li>
+Set |didDocument| to |status|.`didDocument`.
+                        </li>
+                        <li>
+Set |heartbeatFrequency| to |didDocument|.`hearbeatFrequency`.
+                        </li>
+                        <li>
+Set |previousEventHash| to |eventEntryHash|.
+                        </li>
+                        <li>
+Continue with the next |eventEntry| in |log|.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+If |eventEntry|.`proof` is not present or is empty,
+store `MISSING_WITNESS_PROOFS` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                    </li>
+                    <li>
+If |event|.`proof` is not present or is empty,
+store `MISSING_PROOFS` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                    </li>
+                    <li>
+Select the oldest |event|.`proof`.`created` value.
+Let |eventCreated| be the result.
+                    </li>
+                    <li>
+Let |operationType| be the value of |event|.`operation`.`type`.
+                    </li>
+                    <li>
+If |operationType| is the `create` string value:
+                      <ol class="algorithm">
+                        <li>
+If `event`.previousEventHash value is present,
+store `BROKEN_CHAIN` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                        </li>
+                        <li>
+Set |didDocument| to the value of |event|.`operation`.`data` property.
+                        </li>
+                        <li>
+If |didDocument| is not valid [=DID document=],
+or |didDocument|.`id` is not |did|,
+store an `INVALID_DOCUMENT` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                        </li>
+                        <li>
+Verify the inception of the `did:cel` identifier:
+                          <ol class="algorithm">
+                            <li>
+Clone |didDocument| as |genesisDidDocument|.
+                            </li>
+                            <li>
+Remove |genesisDidDocument|.`id` property.
+                            </li>
+                            <li>
+Remove all `controller` properties from the |genesisDidDocument|
+where the value is |did|.
+                            </li>
+                            <li>
+Canonicalize |genesisDidDocument| using JSON Canonicalization Scheme (JCS)
+as specified in [[RFC8785]]. Let |canonicalizedDocument| be the result.
+                            </li>
+                            <li>
+Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
+UTF-8 |canonicalizedDocument|. Let |genesisHash| be the result.
+                            </li>
+                            <li>
+Encode |genesisHash| using base58-btc encoding, prepending the
+<a data-cite="CID#Multibase">Multibase</a> (`z`) character to the encoding. Let
+|encodedGenesisHash| be the result.
+                            </li>
+                            <li>
+If |methodSpecificId| is not |encodedGenesisHash|, then the inception is corrupted;
+store `INVALID_GENESIS` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                            </li>
+                          </ol>
+                        </li>
+                        <li>
+Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency`
+which MUST conform to ISO 8601 duration format.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+Otherwise:
+                      <ol class="algorithm">
+                        <li>
+If `event`.previousEventHash value is not present,
+store `BROKEN_CHAIN` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.                          
+                        </li>
+                        <li>
+Compute the absolute duration between |eventCreated| and |lastModified| values.
+Let |duration| be the result.
+                        </li>
+                        <li>
+If |duration| is greater than |heartbeatFrequency|, the log is not
+alive;
+store `EVENT_TIME_GAP` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                        </li>
+                        <li>
+If |operationType| is not one of the string values `heartbeat`, `update`, or `deactivate`,
+an unknown |operationType| has been detected;
+store `INVALID_OPERATION` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+Let |ttl| be |eventCreated| + |heartbeatFrequency|.
+                    </li>
+                    <li>
+Verify the integrity and authenticity of |event| by passing the |event|
+to a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>-conformant
+verifier that MUST ensure:
+                      <ol class="algorithm">
+                        <li>
+`proof`.`proofPurpose` MUST  be the string value `assertionMethod`.
+                        </li>
+                        <li>
+|eventCreated| MUST be earlier than or equal to `proof`.`created`,
+and `proof`.`created` MUST be earlier than |ttl|.
+                        </li>
+                        <li>
+`proof`.`verificationMethod` MUST resolve against |didDocument|.
+ Let |verificationMethod| be the result.
+                        </li>
+                        <li>
+|verificationMethod|.`controller` MUST be equal to |didDocument|.`id`.
+                        </li>
+                      </ol>
+If the |event| verification fails, the [=event=] is not verified;
+store `NOT_AUTHENTIC` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                    </li>
+                    <li>
+Verify the temporal validity of |eventEntry| by
+taking the following steps:
+                      <ol class="algorithm">
+                        <li>
+Canonicalize |event| using the JSON Canonicalization Scheme
+(JCS) as specified in [[RFC8785]]. Let canonicalizedEvent be the result.
+                        </li>
+                        <li>
+Compute the SHA3-256 Multihash of the UTF-8 encoded |canonicalizedEvent|.
+Let |hash| be the result.
+                        </li>
+                        <li>
+Encode |hash| using base58-btc encoding, prepending the Multibase (z)
+character to the encoding. Let |digestMultibase| be the result.
+                        </li>
+                        <li>
+Let |witnessedDocument| be a [=map=] containing the `digestMultibase` property
+and `proof` property set to |eventEntry|.`proof` value.
+                        </li>
+                        <li>
+Verify the integrity and authenticity of |eventEntry| by passing the |witnessedDocument|
+to a <a data-cite="VC-DATA-INTEGRITY">VC Data Integrity</a>-conformant
+verifier that MUST ensure:
+                          <ol class="algorithm">
+                            <li>
+`proof`.`proofPurpose` MUST  be the string value `assertionMethod`.
+                            </li>
+                            <li>
+|eventCreated| MUST be earlier than `proof`.`created`,
+and `proof`.`created` MUST be earlier than |ttl|.
+                            </li>
+                            <li>
+A minimum number of valid witness proofs, as specified by the application logic,
+MUST be verified.
+                            </li>
+                          </ol>
+                        </li>
+                      </ol>
+If the |witnessedDocument| verification fails, the |eventEntry| is not witnessed;
+store `NOT_WITNESSED` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                    </li>
+                    <li>
+If |operationType| is the `deactivate` string value,
+a `DEACTIVATED` error MUST be raised and processing MUST be aborted.
+                    </li>
+                    <li>
+If |operationType| is the `update` string value:
+                      <ol class="algorithm">
+                        <li>
+Set |didDocument| to the value of |event|.`operation`.`data` property.
+                        </li>
+                        <li>
+If |didDocument| is not valid [=DID document=],
+or |didDocument|.`id` is not |did|,
+store an `INVALID_DOCUMENT` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                        </li>
+                        <li>
+Set |heartbeatFrequency| to the value of |didDocument|.`heartbeatFrequency`
+which MUST conform to ISO 8601 duration format.
+                        </li>
+                      </ol>
+                    </li>
+                    <li>
+Set |lastModified| be the |eventCreated|.
+                    </li>
+                    <li>
+Set |previousEventHash| be the |eventEntryHash|.
+                    </li>
+                    <li>
+Store a [=map=] containing |didDocument| and |lastModified| in
+|eventStatus| under the key |eventEntryHash|.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+Compute the absolute duration between the current execution datetime 
+and |lastModified|. Let |duration| be the result.
+                </li>
+                <li>
+If |duration| is greater than |heartbeatFrequency|, then the log is not
+alive;
+continue with the next |logMap| entry.
+                </li>
+                <li>
+If the |endpoint| is not listed as a `CelStorageService` endpoint
+in the |didDocument| `service` section, then the |log| origin is not approved;
+continue with the next |logMap| entry.
+                </li>
+                <li>
+Return a [=map=] containing |didDocument| and |endpoint| as the read algorithm result.
+                </li>
+              </ol>
+            </li>
+            <li>
+Resolution failed, a `RESOLUTION_FAILED` error MUST be raised.
             </li>
           </ol>
-
         </section>
 
       </section>
