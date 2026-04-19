@@ -943,15 +943,15 @@ Let |methodSpecificId| be the result.
               </ol>
             </li>
             <li>
+Initialize |logMap| to an empty [=map=].
+            </li>
+            <li>
 Locate and retrieve the [=cryptographic event log=]:
               <ol class="algorithm">
                 <li>
 If the |identifier| is a DID URL containing a `storage`
 parameter and |options|.`followStorage` is `true`,
 add the storage parameter value to the |endpoints|.
-                </li>
-                <li>
-Let |logMap| be an empty [=map=].
                 </li>
                 <li>
 For each |endpoint| in |endpoints| perform in parallel:
@@ -973,10 +973,11 @@ Add a new entry to |logMap| with key |endpoint| and value |log|.
                     </li>
                   </ol>
                 </li>
-                <li>
-If |logMap| is empty, a `LOG_NOT_FOUND` error MUST be raised and processing MUST be aborted.
-                </li>
               </ol>
+            </li>
+            <li>
+If |logMap| is an empty [=map=],
+a `LOG_NOT_FOUND` error MUST be raised and processing MUST be aborted.
             </li>
             <li>
 Sort the |logMap| in descending order by the number of events contained
@@ -992,6 +993,15 @@ the entry key.
                 <li>
 For each |eventEntry| in |log|, verify integrity, liveness, and temporal continuity:
                   <ol class="algorithm">
+                    <li>
+Let |event| be the value of |eventEntry|.`event`.
+                    </li>
+                    <li>
+If |previousEventHash| is not defined and |event|.`previousEventHash` is present,
+or |previousEventHash| is defined and is not |event|.`previousEventHash`,
+the event chain is corrupted;
+continue with the next |logMap| entry.
+                    </li>
                     <li>
 Set |eventEntryHash| to the result of the following:
                       <ol class="algorithm">
@@ -1042,9 +1052,6 @@ store `MISSING_WITNESS_PROOFS` error in |eventStatus| under the key |eventEntryH
 continue with the next |logMap| entry.
                     </li>
                     <li>
-Let |event| be the value of |eventEntry|.`event`.
-                    </li>
-                    <li>
 If |event|.`proof` is not present or is empty,
 store `MISSING_PROOFS` error in |eventStatus| under the key |eventEntryHash|,
 continue with the next |logMap| entry.
@@ -1060,16 +1067,11 @@ Let |operationType| be the value of |event|.`operation`.`type`.
 If |operationType| is the `create` string value:
                       <ol class="algorithm">
                         <li>
-If it's not the very first |eventEntry| in the |log|,
-the log is corrupted;
-store an `INVALID_CHAIN` error in |eventStatus| under the key |eventEntryHash|,
-continue with the next |logMap| entry.
-                        </li>
-                        <li>
 Set |didDocument| to the value of |event|.`operation`.`data` property.
                         </li>
                         <li>
 If |didDocument| is not valid [=DID document=],
+store an `INVALID_DOCUMENT` error in |eventStatus| under the key |eventEntryHash|,
 continue with the next |logMap| entry.
                         </li>
                         <li>
@@ -1120,23 +1122,19 @@ which MUST conform to ISO 8601 duration format.
 Otherwise:
                       <ol class="algorithm">
                         <li>
-If |event|.`previousEventHash` is not present or does not equal to
-|previousEventHash|, then event chain is corrupted;
-store an `BROKEN_CHAIN` error in |eventStatus| under the key |eventEntryHash|,
-continue with the next |logMap| entry.
-                        </li>
-                        <li>
 Compute the absolute duration between |eventCreated| and |lastModified| values.
 Let |duration| be the result.
                         </li>
                         <li>
 If |duration| is greater than |heartbeatFrequency|, the log is not
 alive;
+store `EVENT_TIME_GAP` error in |eventStatus| under the key |eventEntryHash|,
 continue with the next |logMap| entry.
                         </li>
                         <li>
 If |operationType| is not one of the string values `heartbeat`, `update`, or `deactivate`,
 an unknown |operationType| has been detected;
+store `INVALID_OPERATION` error in |eventStatus| under the key |eventEntryHash|,
 continue with the next |logMap| entry.
                         </li>
                       </ol>
