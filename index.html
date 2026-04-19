@@ -1027,7 +1027,7 @@ Let |status| be the value stored under the |eventEntryHash| key in |eventStatus|
                         </li>
                         <li>
 If |status| is an error,
-stop processing this |log| and continue with the next |logMap| entry.
+continue with the next |logMap| entry.
                         </li>
                         <li>
 Set |lastModified| to |status|.`lastModified`.
@@ -1066,6 +1066,11 @@ Let |operationType| be the value of |event|.`operation`.`type`.
                     <li>
 If |operationType| is the `create` string value:
                       <ol class="algorithm">
+                        <li>
+If `event`.previousEventHash value is present,
+store `BROKEN_CHAIN` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.
+                        </li>
                         <li>
 Set |didDocument| to the value of |event|.`operation`.`data` property.
                         </li>
@@ -1117,6 +1122,11 @@ which MUST conform to ISO 8601 duration format.
                     <li>
 Otherwise:
                       <ol class="algorithm">
+                        <li>
+If `event`.previousEventHash value is not present,
+store `BROKEN_CHAIN` error in |eventStatus| under the key |eventEntryHash|,
+continue with the next |logMap| entry.                          
+                        </li>
                         <li>
 Compute the absolute duration between |eventCreated| and |lastModified| values.
 Let |duration| be the result.
