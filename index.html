@@ -179,17 +179,20 @@ table.simple tbody tr:last-of-type {
   <body>
     <section id='abstract'>
       <p>
-[=Decentralized Identifiers=] (DIDs) are a type of identifier for verifiable,
-decentralized digital identity. These identifiers are designed to enable the
-controller of a DID to prove control over the identifier in a way that is
-independent of any centralized registry, identity provider, or certificate authority.
-These sorts of identifiers often utilize a heavy-weight registry, such as ones
-utilizing Decentralized Ledger Technologies (DLT), to create, read, update,
-and deactivate [=DIDs=]. This specification describes a [=witness=]-based [=DID
-Method=] where each DID Document's history is contained in a [=cryptographic
-event log=] where each event is [=witnessed=] by one or more trusted entities. The
-approach avoids the need for complex decentralized consensus algorithms as well
-as expensive proof-of-work or proof-of-stake systems.
+The `did:cel` specification defines a fully decentralized [=DID=] method
+that is independent of centralized registries, identity providers,
+or certificate authorities.
+The `did:cel` identifier&apos;s state is established through an immutable,
+distributed [=cryptographic event log=] that is cryptographically
+bound to the identifier. Its lifecycle state changes are verified
+through threshold-based [=witness=] consensus, ensuring non-repudiation
+and preventing log equivocation or tampering.
+`did:cel` enables full control over the identifier,
+strong fault tolerance, minimal latency, and low-cost operation in
+distributed environments by allowing state verification
+without continuous global coordination, complex consensus
+protocols (e.g., proof-of-work or proof-of-stake), or heavyweight
+ledger infrastructure.
       </p>
     </section>
 
