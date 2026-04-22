@@ -565,6 +565,72 @@ privacy benefits.
 
     </section>
 
+    <section class="informative">
+      <h2>Cryptographic Event Log (CEL)</h2>
+
+      <p>
+The following section describes the utilization of the [=cryptographic event log=]
+within the `did:cel` specification. This specification defines a [[[CEL]]] feature
+subset optimized for managing [=DID Document=] state transitions.
+      </p>
+
+      <section class="informative">
+        <h3>Data Model</h3>
+
+        <p>
+A [=cryptographic event log=] (CEL) consists of an ordered sequence of [=witnessed=] events
+representing state transitions of the [=DID document=] associated with a `did:cel`
+identifier. The log captures the full history of changes to the identifier state.
+The structure of the log is shown below:
+        </p>
+
+        <figure>
+          <img style="margin: auto; display: block; height: 500px;"
+               src="diagrams/did-cel-log-structure.svg" alt="diagram showing
+               cryptographic event log structure">
+          <figcaption style="text-align: center;">
+            The [=cryptographic event log=] structure.
+          </figcaption>
+        </figure>
+
+        <p>
+The log MUST contain one or more [=witnessed=] [=event entries=].
+The first event entry MUST be a `create` event that defines the initial
+[=DID document=] state associated with a `did:cel` identifier. This initial
+state serves as the basis from which a [=genesis DID document=] is derived,
+enabling verification of the `did:cel` identifier&apos;s inception. Subsequent
+[=event entries=] allow `update` operations on the initial [=DID document=],
+a `heartbeat` event that ensures the temporal liveness of the log, and a `deactivate`
+operation.
+        </p>
+
+        <p>
+Each [=event entry=] MUST have its temporal existence verified by a set of oblivious
+[=witnesses=]. The minimum [=witness=] threshold is defined by application logic. Each entry
+MUST contain exactly one [=event=] that defines a state transition in the identifier&apos;s
+life cycle.
+        </p>
+
+        <p>
+An [=event=] describes an operation within the identifier&apos;s life cycle that is authorized
+by the [=DID document=] controller and accompanied by a cryptographic [=proof=]
+asserting the authenticity of the event. The event MUST contain exactly one [=operation=]
+and one or more [=proofs=], each signed using an assertion method defined in the most
+recent [=DID document=] state prior to the event.
+        </p>
+
+        <p>
+The `create` operation MUST be the first [=event entry=] in the log and MUST NOT
+appear again. It defines the initial state.
+The `heartbeat` operation does not modify the [=DID document=] state but asserts
+the liveness of the log. The `update` operation mutates the [=DID document=] state;
+both operations are transitive.
+The `deactivate` operation is final and permanently deactivates the log.
+        </p>
+
+      </section>
+    </section>
+
     <section class="normative">
       <h2>Operations</h2>
 
