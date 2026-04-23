@@ -589,7 +589,7 @@ The structure of the log is shown below:
                src="diagrams/did-cel-log-structure.svg" alt="diagram showing
                cryptographic event log structure">
           <figcaption style="text-align: center;">
-            The [=cryptographic event log=] structure.
+            The structure of the [=cryptographic event log=].
           </figcaption>
         </figure>
 
@@ -598,7 +598,7 @@ The log MUST contain one or more [=witnessed=] [=event entries=].
 The first event entry MUST be a `create` event that defines the initial
 [=DID document=] state associated with a `did:cel` identifier. This initial
 state serves as the basis from which a [=genesis DID document=] is derived,
-enabling verification of the `did:cel` identifier&apos;s inception. Subsequent
+enabling verification of the `did:cel` identifier's inception. Subsequent
 [=event entries=] allow `update` operations on the initial [=DID document=],
 a `heartbeat` event that ensures the temporal liveness of the log, and a `deactivate`
 operation.
@@ -612,7 +612,7 @@ life cycle.
         </p>
 
         <p>
-An [=event=] describes an operation within the identifier&apos;s life cycle that is authorized
+An [=event=] describes an operation within the identifier's life cycle that is authorized
 by the [=DID document=] controller and accompanied by a cryptographic [=proof=]
 asserting the authenticity of the event. The event MUST contain exactly one [=operation=]
 and one or more [=proofs=], each signed using an assertion method defined in the most
@@ -622,9 +622,15 @@ recent [=DID document=] state prior to the event.
         <p>
 The `create` operation MUST be the first [=event entry=] in the log and MUST NOT
 appear again. It defines the initial state.
+        </p>
+
+        <p>
 The `heartbeat` operation does not modify the [=DID document=] state but asserts
-the liveness of the log. The `update` operation mutates the [=DID document=] state;
-both operations are transitive.
+the liveness of the log. The `update` operation mutates the [=DID document=] state.
+Both the `heartbeat` and `update` operations are transitive.
+        </p>
+
+        <p>
 The `deactivate` operation is final and permanently deactivates the log.
         </p>
 
