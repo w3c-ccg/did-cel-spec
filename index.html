@@ -631,10 +631,88 @@ Both the `heartbeat` and `update` operations are transitive.
         </p>
 
         <p>
-The `deactivate` operation is final and permanently deactivates the log.
+The `deactivate` operation is terminal and permanently deactivates the log.
         </p>
 
       </section>
+
+      <section class="informative">
+        <h3>Lifecycle</h3>
+
+        <p>
+The [=cryptographic event log=] lifecycle is a finite state machine defined
+by two orthogonal properties of authority and liveness. This model describes
+the transitions between active, degraded, and terminal states.
+        </p>
+
+        <p>
+`Controlled` and `Uncontrolled` states represent the authority condition of
+the [=cryptographic event log=] while it is alive. `Controlled` indicates
+exclusive authority, while `Uncontrolled` indicates that authority is lost
+or compromised and no longer exclusive.
+        </p>
+
+        <p>
+`Abandoned` and `Deactivated` states represent two distinct termination mechanisms.
+Implicit termination, based on absence of `heartbeat` [=events=], and explicit
+termination, forced by `deactivate` [=event=].
+        </p>
+
+        <figure>
+          <img style="margin: auto; display: block; height: 360px;"
+               src="diagrams/did-cel-log-lifecycle.svg" alt="diagram showing
+               cryptographic event log lifecycle">
+          <figcaption style="text-align: center;">
+            The lifecycle of the [=cryptographic event log=].
+          </figcaption>
+        </figure>
+
+        <dl>
+          <dt>Controlled</dt>
+          <dd>
+The healthy operational state. The controller possesses valid keys and
+exclusive authority, maintaining the [=cryptographic event log=] through
+regular updates or periodic `heartbeat` [=events=].
+          </dd>
+        </dl>
+
+        <dl>
+          <dt>Uncontrolled</dt>
+          <dd>
+A degraded state representing compromised or lost authority. If keys are
+compromised, an unauthorized actor may gain the ability to append to or
+modify the log, resulting in dual control or a total loss of exclusive write
+access. During compromise, the [=cryptographic event log=] remains live
+as long as either the legitimate controller or an attacker provides valid `heartbeat`
+[=event=]. This state is non-terminal. However, the absence of a `heartbeat`
+[=event=] transitions the log to the `Abandoned` state. If a recovery key is
+compromised, an attacker may issue a `deactivate` [=event=], transitioning
+the identifier to the `Deactivated` state.
+          </dd>
+        </dl>
+
+        <dl>
+          <dt>Abandoned</dt>
+          <dd>
+A state representing a liveness failure, entered exclusively upon the absence of
+a `heartbeat` [=event=], indicating that the [=cryptographic event log=] is no
+longer actively maintained. This is a terminal state representing the end of
+the identifier’s active lifecycle due to loss of liveness, unlike the `Deactivated`
+state, which is reached via an explicit `deactivate` [=event=].
+          </dd>
+        </dl>
+
+        <dl>
+          <dt>Deactivated</dt>
+          <dd>
+The terminal state representing permanent revocation. It is entered via
+an explicit `deactivate` [=event=]. This state signifies the end of
+the identifier’s operational lifecycle and validity.
+          </dd>
+        </dl>
+
+      </section>
+
     </section>
 
     <section class="normative">
