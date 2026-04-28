@@ -5,10 +5,10 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="csJMsV1-PCURgUvkfRxj-27" parent="1" style="shape=folder;align=center;verticalAlign=middle;fontStyle=0;tabWidth=100;tabHeight=30;tabPosition=left;html=1;boundedLbl=1;labelInHeader=1;rounded=1;absoluteArcSize=1;arcSize=10;whiteSpace=wrap;fillColor=none;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Revoked&lt;/font&gt;" vertex="1">
-          <mxGeometry height="140" width="370" x="-820" y="-380" as="geometry" />
+          <mxGeometry height="140" width="350" x="-790" y="-370" as="geometry" />
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-26" parent="1" style="shape=folder;align=center;verticalAlign=middle;fontStyle=0;tabWidth=100;tabHeight=30;tabPosition=left;html=1;boundedLbl=1;labelInHeader=1;rounded=1;absoluteArcSize=1;arcSize=10;whiteSpace=wrap;fillColor=none;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Active&lt;/font&gt;" vertex="1">
-          <mxGeometry height="190" width="560" x="-820" y="-600" as="geometry" />
+          <mxGeometry height="190" width="530" x="-790" y="-600" as="geometry" />
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-1" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-2" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="csJMsV1-PCURgUvkfRxj-7">
           <mxGeometry relative="1" as="geometry">
@@ -16,7 +16,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-2" parent="1" style="ellipse;fillColor=strokeColor;html=1;rounded=1;" value="" vertex="1">
-          <mxGeometry height="30" width="30" x="-920" y="-480" as="geometry" />
+          <mxGeometry height="30" width="30" x="-890" y="-480" as="geometry" />
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-3" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="csJMsV1-PCURgUvkfRxj-12">
           <mxGeometry relative="1" as="geometry">
@@ -40,7 +40,7 @@
           <mxGeometry height="60" width="130" x="-760" y="-495" as="geometry" />
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-9" parent="1" style="html=1;align=center;verticalAlign=middle;rounded=1;absoluteArcSize=1;arcSize=10;whiteSpace=wrap;fontSize=16;gradientColor=none;strokeColor=default;fillColor=none;" value="Abandoned" vertex="1">
-          <mxGeometry height="60" width="124" x="-602" y="-325" as="geometry" />
+          <mxGeometry height="60" width="110" x="-580" y="-315" as="geometry" />
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-10" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-26" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;exitPerimeter=0;" target="csJMsV1-PCURgUvkfRxj-9">
           <mxGeometry relative="1" as="geometry" />
@@ -48,55 +48,56 @@
         <mxCell id="csJMsV1-PCURgUvkfRxj-12" parent="1" style="html=1;align=center;verticalAlign=middle;rounded=1;absoluteArcSize=1;arcSize=10;whiteSpace=wrap;fontSize=16;gradientColor=none;strokeColor=default;fillColor=none;" value="Uncontrolled" vertex="1">
           <mxGeometry height="60" width="130" x="-490" y="-495" as="geometry" />
         </mxCell>
-        <mxCell id="csJMsV1-PCURgUvkfRxj-13" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-27" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;exitX=0;exitY=0;exitDx=370;exitDy=85;exitPerimeter=0;" target="csJMsV1-PCURgUvkfRxj-15" value="">
+        <mxCell id="csJMsV1-PCURgUvkfRxj-13" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-27" style="edgeStyle=none;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;exitX=0;exitY=0;exitDx=350;exitDy=85;exitPerimeter=0;" target="csJMsV1-PCURgUvkfRxj-15" value="">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="-395" y="-255" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-14" parent="1" style="html=1;align=center;verticalAlign=middle;rounded=1;absoluteArcSize=1;arcSize=10;dashed=0;whiteSpace=wrap;fontSize=16;glass=0;shadow=0;fillColor=none;" value="Deactivated" vertex="1">
-          <mxGeometry height="60" width="124" x="-740" y="-325" as="geometry" />
+          <mxGeometry height="60" width="110" x="-710" y="-315" as="geometry" />
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-15" parent="1" style="ellipse;html=1;shape=endState;fillColor=strokeColor;rounded=1;" value="" vertex="1">
-          <mxGeometry height="30" width="30" x="-390" y="-310" as="geometry" />
+          <mxGeometry height="30" width="30" x="-390" y="-300" as="geometry" />
         </mxCell>
-        <mxCell id="csJMsV1-PCURgUvkfRxj-16" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" target="csJMsV1-PCURgUvkfRxj-7">
+        <mxCell id="csJMsV1-PCURgUvkfRxj-16" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" target="csJMsV1-PCURgUvkfRxj-7">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="-457" y="-530" />
-              <mxPoint x="-662" y="-530" />
+              <mxPoint x="-695" y="-530" />
             </Array>
             <mxPoint x="-380" y="-495" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="csJMsV1-PCURgUvkfRxj-17" connectable="0" parent="csJMsV1-PCURgUvkfRxj-16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Recovery&lt;/font&gt;" vertex="1">
+        <mxCell id="csJMsV1-PCURgUvkfRxj-17" connectable="0" parent="csJMsV1-PCURgUvkfRxj-16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Valid Recovery Key&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.0616" y="2" as="geometry">
-            <mxPoint x="57" y="-12" as="offset" />
+            <mxPoint x="42" y="-12" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-18" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;labelBackgroundColor=default;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;Missing&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;Heartbeat&lt;/span&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry x="-520" y="-390" as="geometry">
+          <mxGeometry x="-500" y="-380" as="geometry">
             <mxPoint x="-24" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="csJMsV1-PCURgUvkfRxj-19" edge="1" parent="1" source="csJMsV1-PCURgUvkfRxj-7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="csJMsV1-PCURgUvkfRxj-7">
+        <mxCell id="csJMsV1-PCURgUvkfRxj-19" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=1;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;entryPerimeter=0;" target="csJMsV1-PCURgUvkfRxj-26">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="-695" y="-530" />
-              <mxPoint x="-790" y="-530" />
-              <mxPoint x="-790" y="-465" />
+              <mxPoint x="-220" y="-490" />
+              <mxPoint x="-220" y="-370" />
+              <mxPoint x="-392" y="-370" />
             </Array>
+            <mxPoint x="-260" y="-490" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-20" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;Deactivate&lt;/span&gt;" vertex="1">
-          <mxGeometry x="-660" y="-390" as="geometry">
+          <mxGeometry x="-630" y="-380" as="geometry">
             <mxPoint x="-24" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="csJMsV1-PCURgUvkfRxj-21" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Create&lt;/font&gt;" vertex="1">
-          <mxGeometry x="-860" y="-480" as="geometry" />
+          <mxGeometry x="-830" y="-480" as="geometry" />
         </mxCell>
-        <mxCell id="csJMsV1-PCURgUvkfRxj-22" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;Update&lt;/span&gt;&lt;br&gt;&lt;div&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;&amp;nbsp;or Heartbeat&amp;nbsp;&lt;br&gt;&amp;nbsp;or Recovery&amp;nbsp;&lt;/span&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry x="-720" y="-530" as="geometry">
+        <mxCell id="csJMsV1-PCURgUvkfRxj-22" connectable="0" parent="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;rounded=1;" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;Update&lt;/span&gt;&lt;br&gt;&lt;div&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;&amp;nbsp;or Heartbeat&amp;nbsp;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;or Recovery&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry x="-250" y="-370" as="geometry">
             <mxPoint x="-24" as="offset" />
           </mxGeometry>
         </mxCell>
