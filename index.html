@@ -670,9 +670,9 @@ termination, forced by `deactivate` [=event=].
         <dl>
           <dt>Controlled</dt>
           <dd>
-The healthy operational state. The controller possesses valid keys and
-exclusive authority, maintaining the [=cryptographic event log=] through
-regular updates or periodic `heartbeat` [=events=].
+The healthy operational state. The controller possesses valid assertion and
+recovery keys, has exclusive authority, and maintains the [=cryptographic event log=]
+through `update` or periodic `heartbeat` [=events=].
           </dd>
         </dl>
 
@@ -685,9 +685,9 @@ modify the log, resulting in dual control or a total loss of exclusive write
 access. During compromise, the [=cryptographic event log=] remains active
 as long as either the legitimate controller or an attacker provides valid `heartbeat`
 [=event=]. This state is non-terminal. However, the absence of a `heartbeat`
-[=event=] transitions the log to the `Abandoned` state. If a recovery key is
-compromised, an attacker may issue a `deactivate` [=event=], transitioning
-the identifier to the `Deactivated` state.
+[=event=] transitions the [=cryptographic event log=] to the `Abandoned` state.
+If a recovery key is compromised, an attacker may issue a `deactivate` [=event=],
+transitioning the identifier to the `Deactivated` state.
           </dd>
         </dl>
 
