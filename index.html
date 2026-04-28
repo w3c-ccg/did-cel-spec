@@ -640,14 +640,14 @@ The `deactivate` operation is terminal and permanently deactivates the log.
         <h3>Lifecycle</h3>
 
         <p>
-The [=cryptographic event log=] lifecycle is a finite state machine defined
+The [=cryptographic event log=] lifecycle is a finite state automaton defined
 by two orthogonal properties of authority and liveness. This model describes
 the transitions between active, degraded, and terminal states.
         </p>
 
         <p>
 `Controlled` and `Uncontrolled` states represent the authority condition of
-the [=cryptographic event log=] while it is alive. `Controlled` indicates
+the [=cryptographic event log=] while it is active. `Controlled` indicates
 exclusive authority, while `Uncontrolled` indicates that authority is lost
 or compromised and no longer exclusive.
         </p>
@@ -659,7 +659,7 @@ termination, forced by `deactivate` [=event=].
         </p>
 
         <figure>
-          <img style="margin: auto; display: block; height: 360px;"
+          <img style="margin: auto; display: block; height: 440px;"
                src="diagrams/did-cel-log-lifecycle.svg" alt="diagram showing
                cryptographic event log lifecycle">
           <figcaption style="text-align: center;">
@@ -682,7 +682,7 @@ regular updates or periodic `heartbeat` [=events=].
 A degraded state representing compromised or lost authority. If keys are
 compromised, an unauthorized actor may gain the ability to append to or
 modify the log, resulting in dual control or a total loss of exclusive write
-access. During compromise, the [=cryptographic event log=] remains live
+access. During compromise, the [=cryptographic event log=] remains active
 as long as either the legitimate controller or an attacker provides valid `heartbeat`
 [=event=]. This state is non-terminal. However, the absence of a `heartbeat`
 [=event=] transitions the log to the `Abandoned` state. If a recovery key is
