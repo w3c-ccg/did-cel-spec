@@ -1,0 +1,52 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="Xm0gMfYdVQxCYVVIkRXe">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-1" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=4;strokeColor=light-dark(#000000,#B62424);fillColor=light-dark(#000000,#EA6B66);strokeWidth=3;align=left;verticalAlign=top;textShadow=0;labelBorderColor=none;autosizeText=0;fontSize=16;fontColor=light-dark(#000000,#000000);spacingTop=6;spacingLeft=12;fontFamily=Verdana;" value="Cryptographic Event Log (CEL)" vertex="1">
+          <mxGeometry height="500" width="440" x="230" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;shadow=1;fillColor=light-dark(#F0A30A,#FFE599);strokeColor=light-dark(#6F0000,#FFD966);fontColor=light-dark(#000000,#000000);arcSize=4;strokeWidth=3;align=left;verticalAlign=top;fontSize=16;spacingTop=6;spacingLeft=12;glass=0;gradientColor=none;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;" value="Event Entry #1" vertex="1">
+          <mxGeometry height="340" width="420" x="240" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=light-dark(#F0A30A,#FFB570);strokeColor=light-dark(#6F0000,#FF9933);fontColor=#ffffff;strokeWidth=3;shadow=1;absoluteArcSize=0;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=top;align=left;spacingTop=6;spacingLeft=12;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;" value="Event" vertex="1">
+          <mxGeometry height="215" width="400" x="250" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#99CCFF);strokeColor=light-dark(#000000,#7EA6E0);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=top;align=left;fontColor=light-dark(#000000,#000000);spacingTop=6;spacingLeft=12;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;" value="Operation" vertex="1">
+          <mxGeometry height="90" width="380" x="260" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;shadow=1;fillColor=light-dark(#F0A30A,#FFE599);strokeColor=light-dark(#BD7000,#FFD966);fontColor=light-dark(#000000,#000000);arcSize=24;strokeWidth=3;align=left;verticalAlign=middle;fontSize=16;spacingTop=0;spacingLeft=12;glass=0;gradientColor=none;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;textShadow=0;" value="Event Entry #N" vertex="1">
+          <mxGeometry height="40" width="420" x="240" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,#97D077);strokeColor=light-dark(#82B366,#4D9900);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=middle;align=center;spacingTop=0;spacingLeft=0;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;gradientColor=none;fontColor=light-dark(#000000,#000000);" value="Controller&lt;div&gt;Proof #1&lt;/div&gt;" vertex="1">
+          <mxGeometry height="56" width="120" x="260" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,#97D077);strokeColor=light-dark(#82B366,#4D9900);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=middle;align=center;spacingTop=0;spacingLeft=0;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;gradientColor=none;fontColor=light-dark(#000000,#000000);" value="Witness&lt;br&gt;&lt;div&gt;Proof #1&lt;/div&gt;" vertex="1">
+          <mxGeometry height="56" width="128" x="250" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,#97D077);strokeColor=light-dark(#82B366,#4D9900);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=middle;align=center;spacingTop=0;spacingLeft=0;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;gradientColor=none;fontColor=light-dark(#000000,#000000);" value="Controller&lt;div&gt;Proof #2&lt;/div&gt;" vertex="1">
+          <mxGeometry height="56" width="120" x="390" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,#97D077);strokeColor=light-dark(#82B366,#4D9900);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=middle;align=center;spacingTop=0;spacingLeft=0;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;gradientColor=none;fontColor=light-dark(#000000,#000000);" value="Controller&lt;div&gt;Proof #N&lt;/div&gt;" vertex="1">
+          <mxGeometry height="56" width="120" x="520" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#000000,#CCCCCC);strokeWidth=3;fontColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;align=left;spacingLeft=12;shadow=1;shadowColor=light-dark(#000000,#000000);shadowOpacity=33;" value="Type" vertex="1">
+          <mxGeometry height="40" width="80" x="272" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#000000,#CCCCCC);strokeWidth=3;fontColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;align=left;spacingLeft=12;shadow=1;shadowColor=light-dark(#000000,#000000);shadowOpacity=33;" value="Data" vertex="1">
+          <mxGeometry height="40" width="270" x="360" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,#97D077);strokeColor=light-dark(#82B366,#4D9900);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=middle;align=center;spacingTop=0;spacingLeft=0;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;gradientColor=none;fontColor=light-dark(#000000,#000000);" value="Witness&lt;br&gt;&lt;div&gt;Proof #2&lt;/div&gt;" vertex="1">
+          <mxGeometry height="56" width="128" x="386" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,#97D077);strokeColor=light-dark(#82B366,#4D9900);strokeWidth=3;shadow=1;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;fontSize=16;verticalAlign=middle;align=center;spacingTop=0;spacingLeft=0;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;gradientColor=none;fontColor=light-dark(#000000,#000000);" value="Witness&lt;br&gt;&lt;div&gt;Proof #N&lt;/div&gt;" vertex="1">
+          <mxGeometry height="56" width="128" x="522" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="DQhAag-UDoXLGyLQ2SbN-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;shadow=1;fillColor=light-dark(#F0A30A,#FFE599);strokeColor=light-dark(#6F0000,#FFD966);fontColor=light-dark(#000000,#000000);arcSize=24;strokeWidth=3;align=left;verticalAlign=middle;fontSize=16;spacingTop=0;spacingLeft=12;glass=0;gradientColor=none;shadowColor=light-dark(#000000,#000000);fontFamily=Verdana;shadowOffsetX=2;shadowOffsetY=3;shadowOpacity=33;textShadow=0;" value="Event Entry #2" vertex="1">
+          <mxGeometry height="40" width="420" x="240" y="480" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
