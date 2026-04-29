@@ -751,26 +751,26 @@ Return a [=map=] containing:
         <h3>Witness</h3>
 
         <p>
-The [=witness=] operation provides independent cryptographic attestation for events
+The [=witness=] operation provides independent cryptographic attestation for [=events=]
 in a [=cryptographic event log=], establishing temporal evidence and distributed
-validation of [=DID=] operations. After a [=DID document=] is modified, [=witness=]
-services—independent entities operating under their own authority—generate
-[=data integrity proofs=] over events in the log. Each [=witness=] returns a
-cryptographic proof that attests the event existed and was [=witnessed=] at a
-specific point in time.
+validation. [=Witnesses=] are independent entities that provide decentralized
+validation and auditability. They never see the identifier, the [=cryptographic event log=],
+or the [=event=] for which they provide signatures. After a [=cryptographic event log=] is
+created or modified, the [=witness=] service generates [=data integrity proofs=]
+over a cryptographic hash derived from the new [=event=]. The cryptographic proof
+attests that the [=event=] existed and was [=witnessed=] at a specific point in time.
         </p>
 
         <p>
-The [=witnessing=] process does not modify the event itself; rather, it produces a
-collection of cryptographic proofs that are attached to the event structure for
+The [=witnessing=] operation does not modify the [=event=] itself; rather, it produces a
+collection of cryptographic proofs that are attached to an [=event entry=] for
 subsequent verification. These [=witness=] attestations serve multiple purposes:
-they provide temporal anchoring by demonstrating when an event was [=witnessed=],
+they provide temporal anchoring by demonstrating when an [=event=] was [=witnessed=],
 enable auditability through independent third-party validation, and increase
 resistance to tampering by distributing trust across multiple independent
 [=witnesses=]. Unlike centralized timestamp authorities, the [=witness=] architecture
 allows [=DID controllers=] to select [=witness=] services, preventing single points of
-failure while maintaining cryptographic verifiability of the entire event
-history.
+failure while maintaining cryptographic verifiability of the entire history.
         </p>
 
         <pre class="example nohighlight" title="Cryptographic event log after witnessing"
@@ -781,68 +781,84 @@ history.
           <h4>Document Witnessing Algorithm</h4>
 
           <p>
-The following algorithm specifies how to generate [=witness=] attestations for the
-most recent event in a [=cryptographic event log=]. [=Witnesses=] are independent
-entities that cryptographically sign events to provide decentralized validation
-and auditability. The algorithm takes a [=map=] |cel| as input, which is the
-[=cryptographic event log=] containing one or more events. Output is an array of
-proof objects, one from each configured [=witness=], or an error. Whenever this
-algorithm encodes strings, it MUST use UTF-8 encoding.
+The following algorithm specifies how to collect [=witness=] attestations for the
+most recent [=event=] in a [=cryptographic event log=]. The algorithm takes two
+parameters as input: a [=map=] |cel|, which is the [=cryptographic event log=]
+containing one or more [=events=], and a [=list=] |endpoints| containing a list of
+URLs that are trusted by the [=DID controller=]. The output is a [=map=] containing
+two properties: `results`, a [=list=] whose length and order match the |endpoints|
+[=list=] (where each entry is either a [=data integrity proof=] or an error), and
+`eventEntry`, the [=event entry=] for which the attestations were collected.
+Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
 
           <ol class="algorithm">
             <li>
-Initialize an empty array |proofs| to collect [=witness=] attestations.
+Initialize an empty [=map=] |output|.
             </li>
             <li>
-Let |event| be the most recent event in |cel|.|log|. This is obtained by
-accessing the last event in the array.
+Let |eventEntry| be the most recent [=event entry=] in |cel|.`log`.
             </li>
             <li>
-Let |witnesses| be an array of [=witness=] endpoint URLs that are trusted by the
-controller of the [=DID=].
+Set |output|.`eventEntry` to |eventEntry|.
             </li>
             <li>
-For each |witness| endpoint in |witnesses|, perform the following steps:
-              <ol class="algorithm">
-                <li>
-Canonicalize |event| using the JSON Canonicalization Scheme (JCS) as specified
+Let |event| be |eventEntry|.`event`.
+            </li>
+            <li>
+Canonicalize |event| object using the JSON Canonicalization Scheme (JCS) as specified
 in [[RFC8785]]. Let |canonicalizedEvent| be the result.
-                </li>
-                <li>
+            </li>
+            <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
 UTF-8 encoded |canonicalizedEvent|. Let |hash| be the result.
-                </li>
-                <li>
+            </li>
+            <li>
 Encode |hash| using base58-btc encoding, prepending the
 <a data-cite="CID#Multibase">Multibase</a> (`z`) character to the encoding. Let
 |encodedHash| be the result.
+            </li>
+            <li>
+Let |request| be a JSON object containing a `digestMultibase` property
+with |encodedHash| as the associated value.
+            </li>
+            <li>
+Initialize a [=list=] |results| of the same length as |endpoints|.
+            </li>
+            <li>
+For each |index| from 0 to the length of |endpoints| minus 1, perform the following
+steps in parallel:
+              <ol class="algorithm">
+                <li>
+Let |endpoint| be the value at |endpoints|[|index|].
                 </li>
                 <li>
-Send a [=witnessing=] request to the |witness| by performing an HTTP POST on the
-[=witness=] endpoint. The body of the POST is a JSON object containing a
-`digestMultibase` property with |encodedHash| as the associated value. Let
-|proof| be the result. If [=witnessing=] fails, an error MUST be raised and SHOULD
-convey an error type of `WITNESSING_ERROR`.
+Send a [=witnessing=] |request| to the |endpoint| URL by performing an HTTP POST on the
+URL.
                 </li>
                 <li>
-Append |proof| to the |proofs| array.
+If the request is successful, let |result| be the [=data integrity proof=] returned
+by the |endpoint|. Otherwise, let |result| be the error returned.
+                </li>
+                <li>
+Set |results|[|index|] to |result|.
                 </li>
               </ol>
             </li>
             <li>
-Set |event|.`proof` to the |proofs| array containing attestations from all
-[=witnesses=]. Each proof in the array represents an independent cryptographic
-commitment by a [=witness=] that the event is valid and has been [=witnessed=] at a
-specific point in time.
+Set |output|.`results` to |results|.
+            </li>
+            <li>
+Return |output|.
             </li>
           </ol>
 
           <p class="note">
-The [=witness=] operation does not modify the [=cryptographic event log=] itself. The
-returned proofs are attached to the event in the log structure. [=Witnesses=]
-provide independent validation and temporal attestation, enabling auditability
-and resistance to single points of failure in the DID method infrastructure.
+The [=DID controller=] is responsible for processing the `results` [=list=] returned
+by the algorithm. This includes filtering any error entries, selecting the valid
+[=data integrity proofs=] to be retained, and appending those proofs to the
+`eventEntry`. The [=DID controller=] is also responsible for the persistence of the
+modified [=event entry=] within the [=cryptographic event log=].
           </p>
 
         </section>
