@@ -620,8 +620,8 @@ The following algorithm specifies how to create a new `did:cel` [=DID document=]
 with a new verification method and establish a cryptographic event
 log. The algorithm takes three parameters as input: a cryptographic |keyPair|,
 an optional [=map=] representing the initial |didDocument|,
-and |options|. The output is a [=map=] containing the completed `did:cel` |didDocument|, 
-the generated |verificationMethod|, and the initial |cryptographicEventLog|, or an error. 
+and |options|. If not an error, the output is a [=map=] containing the completed `did:cel`
+|didDocument|, the generated |verificationMethod|, and the initial |cryptographicEventLog|. 
 Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
           <p>
