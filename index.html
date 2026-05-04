@@ -755,7 +755,7 @@ The [=witness=] operation provides independent cryptographic attestation for [=e
 in a [=cryptographic event log=], establishing temporal evidence and distributed
 validation. [=Witnesses=] are independent entities that provide decentralized
 validation and auditability. They never see the identifier, the [=cryptographic event log=],
-or the [=event=] for which they provide signatures. After a [=cryptographic event log=] is
+nor the [=event=] for which they provide signatures. After a [=cryptographic event log=] is
 created or modified, the [=witness=] service generates [=data integrity proofs=]
 over a cryptographic hash derived from the new [=event=]. The cryptographic proof
 attests that the [=event=] existed and was [=witnessed=] at a specific point in time.
@@ -765,12 +765,12 @@ attests that the [=event=] existed and was [=witnessed=] at a specific point in 
 The [=witnessing=] operation does not modify the [=event=] itself; rather, it produces a
 collection of cryptographic proofs that are attached to an [=event entry=] for
 subsequent verification. These [=witness=] attestations serve multiple purposes:
-they provide temporal anchoring by demonstrating when an [=event=] was [=witnessed=],
-enable auditability through independent third-party validation, and increase
-resistance to tampering by distributing trust across multiple independent
+they provide temporal anchoring by demonstrating when an [=event=] was [=witnessed=];
+they enable auditability through independent third-party validation; and they
+increase resistance to tampering by distributing trust across multiple independent
 [=witnesses=]. Unlike centralized timestamp authorities, the [=witness=] architecture
 allows [=DID controllers=] to select [=witness=] services, preventing single points of
-failure while maintaining cryptographic verifiability of the entire history.
+failure while maintaining cryptographic verifiability over the entire history.
         </p>
 
         <pre class="example nohighlight" title="Cryptographic event log after witnessing"
@@ -784,10 +784,10 @@ failure while maintaining cryptographic verifiability of the entire history.
 The following algorithm specifies how to collect [=witness=] attestations for the
 most recent [=event=] in a [=cryptographic event log=]. The algorithm takes two
 parameters as input: a [=map=] |cel|, which is the [=cryptographic event log=]
-containing one or more [=events=], and a [=list=] |endpoints| containing a list of
+containing one or more [=events=]; and a [=list=] |endpoints| containing a list of
 URLs that are trusted by the [=DID controller=]. The output is a [=map=] containing
 two properties: `results`, a [=list=] whose length and order match the |endpoints|
-[=list=] (where each entry is either a [=data integrity proof=] or an error), and
+[=list=] (where each entry is either a [=data integrity proof=] or an error); and
 `eventEntry`, the [=event entry=] for which the attestations were collected.
 Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
