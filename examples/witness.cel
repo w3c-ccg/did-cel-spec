@@ -20,12 +20,7 @@
               }
             ],
             "recovery": [
-              {
-                "id": "#zDnaenThrFERDRotcefC3pn9DBDNSpgNhqoGMh6Z1248pWGK9",
-                "type": "Multikey",
-                "controller": "did:cel:zW1nSw7i9XbGpDgN2mRPG1ZX9HCrfDmKrjxm5cRjoavcRB2",
-                "publicKeyMultibase": "zDnaenThrFERDRotcefC3pn9DBDNSpgNhqoGMh6Z1248pWGK9"
-              }
+              "zW1gSHA3256HashOfDidKeyZDnaenThrFERDRotcefC3pn9DBDNSpgNhqo"
             ],
             "service": {
               "type": "CelStorageService",

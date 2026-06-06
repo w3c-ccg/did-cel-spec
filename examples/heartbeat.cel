@@ -20,12 +20,7 @@
               }
             ],
             "recovery": [
-              {
-                "id": "#zDnaex7wVcG2FaWwCz7fGiA72za5bhy83yqSp4g4ibpNY2xHA",
-                "type": "Multikey",
-                "controller": "did:cel:zW1oEeMMxDEgBkt5fay1h9FGVvVk1rmS8uw1KZJ4rFAgu3T",
-                "publicKeyMultibase": "zDnaex7wVcG2FaWwCz7fGiA72za5bhy83yqSp4g4ibpNY2xHA"
-              }
+              "zW1gSHA3256HashOfDidKeyZDnaex7wVcG2FaWwCz7fGiA72za5bhy83yq"
             ],
             "service": {
               "type": "CelStorageService",
@@ -85,7 +80,7 @@
           "created": "2025-12-06T22:09:08Z",
           "proofPurpose": "assertionMethod",
           "proofValue": "z2AuEqJkuHLTXnFPzdCyb6bdZcizVURP4o1vUEkYc5mdD9oRFdwW7pDrQhm8ZxCrVgKkkuBm5476aDhP6FEh5JBix",
-          "verificationMethod": "undefined#zDnaeQgqTA9zL2JPsN5Wd7Zdx8oTawHkvFo98tpUNBrb87RbV"
+          "verificationMethod": "did:cel:zW1oEeMMxDEgBkt5fay1h9FGVvVk1rmS8uw1KZJ4rFAgu3T#zDnaeQgqTA9zL2JPsN5Wd7Zdx8oTawHkvFo98tpUNBrb87RbV"
         }
       },
       "proof": [

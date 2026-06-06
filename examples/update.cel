@@ -20,12 +20,7 @@
               }
             ],
             "recovery": [
-              {
-                "id": "#zDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1C8c8X4GWDRuMVo",
-                "type": "Multikey",
-                "controller": "did:cel:zW1poyeoHaT1WftFBG8WKa6fCaH98tbKKMrkJWDqFeohTz1",
-                "publicKeyMultibase": "zDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1C8c8X4GWDRuMVo"
-              }
+              "zW1gSHA3256HashOfDidKeyZDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1"
             ],
             "service": {
               "type": "CelStorageService",
@@ -102,12 +97,7 @@
               }
             ],
             "recovery": [
-              {
-                "id": "#zDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1C8c8X4GWDRuMVo",
-                "type": "Multikey",
-                "controller": "did:cel:zW1poyeoHaT1WftFBG8WKa6fCaH98tbKKMrkJWDqFeohTz1",
-                "publicKeyMultibase": "zDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1C8c8X4GWDRuMVo"
-              }
+              "zW1gSHA3256HashOfDidKeyZDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1"
             ],
             "service": {
               "type": "CelStorageService",
@@ -125,7 +115,7 @@
           "created": "2025-12-06T22:09:08Z",
           "proofPurpose": "assertionMethod",
           "proofValue": "z4vUFeRUpqaFLiSwkzN2Qiugw1yeA2DgJC6MTpqiwwzBkSNdaNMSYXAgLWC8UsJFb8dymbDQiBaQySuWGjMxBhGiZ",
-          "verificationMethod": "undefined#zDnaeU8aVJn9pZjH7f249geMiz9UTRjfXUcc5pN4QsxVte57q"
+          "verificationMethod": "did:cel:zW1poyeoHaT1WftFBG8WKa6fCaH98tbKKMrkJWDqFeohTz1#zDnaeU8aVJn9pZjH7f249geMiz9UTRjfXUcc5pN4QsxVte57q"
         }
       },
       "proof": [

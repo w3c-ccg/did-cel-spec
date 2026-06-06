@@ -20,12 +20,7 @@
               }
             ],
             "recovery": [
-              {
-                "id": "#zDnaefe4CS8ieyUs8fUZFfsjaWDCgNJszHyxgrAQvFkKXwsPM",
-                "type": "Multikey",
-                "controller": "did:cel:zW1kZFWb8dNEggBF8hCi6Uw6MYPz9wHD47ugaCP4QtGyshD",
-                "publicKeyMultibase": "zDnaefe4CS8ieyUs8fUZFfsjaWDCgNJszHyxgrAQvFkKXwsPM"
-              }
+              "zW1gSHA3256HashOfDidKeyZDnaefe4CS8ieyUs8fUZFfsjaWDCgNJszHyx"
             ],
             "service": {
               "type": "CelStorageService",
@@ -102,12 +97,7 @@
               }
             ],
             "recovery": [
-              {
-                "id": "#zDnaefe4CS8ieyUs8fUZFfsjaWDCgNJszHyxgrAQvFkKXwsPM",
-                "type": "Multikey",
-                "controller": "did:cel:zW1kZFWb8dNEggBF8hCi6Uw6MYPz9wHD47ugaCP4QtGyshD",
-                "publicKeyMultibase": "zDnaefe4CS8ieyUs8fUZFfsjaWDCgNJszHyxgrAQvFkKXwsPM"
-              }
+              "zW1gSHA3256HashOfDidKeyZDnaefe4CS8ieyUs8fUZFfsjaWDCgNJszHyx"
             ],
             "service": {
               "type": "CelStorageService",
@@ -125,7 +115,7 @@
           "created": "2025-12-06T22:09:08Z",
           "proofPurpose": "assertionMethod",
           "proofValue": "z3Zq18W57EsyCo6HyC8J7dTHKnF8rhdjcSAwPowZMWCC4YnRhSnFDoBWvzd1bf12ANAJuATYNJgHU9rw33KcjiXSR",
-          "verificationMethod": "undefined#zDnaeWXHW1LVG4TS3jzPJ7QhKs27qTvLTgeLzdPjP7wUH7Rqk"
+          "verificationMethod": "did:cel:zW1kZFWb8dNEggBF8hCi6Uw6MYPz9wHD47ugaCP4QtGyshD#zDnaeWXHW1LVG4TS3jzPJ7QhKs27qTvLTgeLzdPjP7wUH7Rqk"
         }
       },
       "proof": [
@@ -167,7 +157,7 @@
           "created": "2025-12-06T22:09:08Z",
           "proofPurpose": "assertionMethod",
           "proofValue": "zUiBRBMm1x3nzf3q8bcyMQ2HgarLqpy4vHdaBQqJzQgJ19QLHQNYVjHoc4BgYvLiDLW68dcs7vwGhmgikKQ1bWJS",
-          "verificationMethod": "undefined#zDnaeWXHW1LVG4TS3jzPJ7QhKs27qTvLTgeLzdPjP7wUH7Rqk"
+          "verificationMethod": "did:cel:zW1kZFWb8dNEggBF8hCi6Uw6MYPz9wHD47ugaCP4QtGyshD#zDnaeWXHW1LVG4TS3jzPJ7QhKs27qTvLTgeLzdPjP7wUH7Rqk"
         }
       },
       "proof": [
