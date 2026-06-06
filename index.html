@@ -674,6 +674,34 @@ of URLs that the controller will use to store the canonical version of the
               </ol>
             </li>
             <li>
+Generate a recovery key pair and add its hash to |didDocument|:
+              <ol class="algorithm">
+                <li>
+Generate a new key pair based on |keyType|. Let |recoveryKeyPair| be the result.
+                </li>
+                <li>
+Export the public key from |recoveryKeyPair| as a
+<a data-cite="CID#Multikey">Multikey</a> value. Let |recoveryPublicKey| be the result.
+                </li>
+                <li>
+Form the `did:key` URI for |recoveryPublicKey| by concatenating the string
+`did:key:` and |recoveryPublicKey|.`publicKeyMultibase`. Let |recoveryDidKey|
+be the result.
+                </li>
+                <li>
+Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
+UTF-8 encoded |recoveryDidKey| string. Encode the result using base58-btc,
+prepending the <a data-cite="CID#Multibase">Multibase</a> (`z`) character.
+Let |recoveryHash| be the result.
+                </li>
+                <li>
+Set |didDocument|.`recovery` to an array containing |recoveryHash|. This
+hash represents a commitment to the recovery key without exposing the key
+itself in the [=DID document=].
+                </li>
+              </ol>
+            </li>
+            <li>
 Generate the [=DID=] by hashing the canonicalized [=DID document=]:
               <ol class="algorithm">
                 <li>
@@ -741,6 +769,11 @@ Return a [=map=] containing:
                 </li>
                 <li>
 |keyPair|: the generated key pair (including secret key material)
+                </li>
+                <li>
+|recoveryKeyPair|: the recovery key pair (including secret key material).
+The controller MUST store this securely offline. Its `did:key` URI may be
+used as the `verificationMethod` in a recovery operation.
                 </li>
                 <li>
 |cryptographicEventLog|: the initial event log with the create event
