@@ -921,10 +921,214 @@ read operations benefit from the usage of compression. Therefore, all
           <h4>Document Read Algorithm</h4>
 
           <p>
+The following algorithm specifies how to load and fully validate a `did:cel`
+[=cryptographic event log=]. Whenever this algorithm encodes strings, it MUST
+use UTF-8 encoding.
           </p>
+          <p>The algorithm takes the following inputs:</p>
+          <ul>
+            <li>
+|cel|: a serialized [=cryptographic event log=].
+            </li>
+            <li>
+|trustedWitnesses|: a mandatory array of [=maps=], each containing:
+              <ul>
+                <li>
+`id`: a DID URL identifying the trusted [=witness=].
+                </li>
+                <li>
+`validFrom`: an XML datetime expressing when this [=witness=]
+became trusted.
+                </li>
+                <li>
+`validUntil`: an XML datetime expressing when this [=witness=] is
+no longer trusted.
+                </li>
+              </ul>
+Only [=witness=] proofs whose `verificationMethod` DID matches a trusted
+witness entry whose `validFrom`/`validUntil` range covers the proof's
+`created` timestamp are processed.
+            </li>
+            <li>
+|versionTime|: an optional XML datetime. When provided, only log entries
+whose earliest qualifying trusted witness timestamp is at or before
+|versionTime| are processed, allowing retrieval of the [=DID document=]
+state at a specific point in time.
+            </li>
+          </ul>
+          <p>The algorithm returns a [=map=] containing:</p>
+          <ul>
+            <li>
+|valid|: a boolean, true if no errors were found.
+            </li>
+            <li>
+|errors|: an array of error strings, empty if |valid| is true.
+            </li>
+            <li>
+|didDocument|: the most recent [=DID document=] state if |valid| is
+true, otherwise null.
+            </li>
+          </ul>
 
           <ol class="algorithm">
             <li>
+Parse |cel| as JSON. Let |log| be |cel|.`log`. If |log| is empty, an error MUST
+be raised.
+            </li>
+            <li>
+Let |errors| be an empty array. Verify that the [=DID=] identifier is valid by
+performing the following steps:
+              <ol class="algorithm">
+                <li>
+Let |firstEvent| be |log|[0].`event`. Canonicalize |firstEvent| using JCS
+[[RFC8785]]. Compute the SHA3-256 <a
+data-cite="CID#Multihash">Multihash</a> of the UTF-8 encoded result and
+encode it as a base58-btc <a data-cite="CID#Multibase">Multibase</a> string.
+Let |expectedId| be the concatenation of `did:cel:` and that encoded hash.
+                </li>
+                <li>
+Let |claimedId| be |firstEvent|.`operation`.`data`.`id`. If |claimedId| does
+not equal |expectedId|, an error MUST be raised.
+                </li>
+              </ol>
+            </li>
+            <li>
+Let |currentDidDocument| be null. Let |prevEntryWitnessTime| be null.
+            </li>
+            <li>
+For each |logEntry| at index |i| in |log|, perform the following steps:
+              <ol class="algorithm">
+                <li>
+Let |event| be |logEntry|.`event`. Let |opProof| be |event|.`proof`.
+                </li>
+                <li>
+Let |allWitnessProofs| be |logEntry|.`proof` if present, otherwise an empty
+array. Let |trustedWitnessProofs| be the subset of |allWitnessProofs| where
+the proof's `verificationMethod` DID matches a trusted witness entry in
+|trustedWitnesses| whose `validFrom` is at or before and whose `validUntil` is
+at or after the proof's `created` timestamp.
+                </li>
+                <li>
+If |versionTime| is provided and |trustedWitnessProofs| is non-empty, let
+|earliestWitnessTime| be the minimum parsed `created` timestamp among all
+entries in |trustedWitnessProofs|. If |earliestWitnessTime| is after
+|versionTime|, skip this entry and all subsequent entries and proceed to step 5.
+                </li>
+                <li>
+If |i| is greater than 0, verify the hash chain:
+                  <ol class="algorithm">
+                    <li>
+Let |prevLog| be the subarray of |log| from index 0 up to (not including) |i|.
+Canonicalize the last entry in |prevLog| using JCS [[RFC8785]], compute its
+SHA3-256 <a data-cite="CID#Multihash">Multihash</a>, and encode it as a
+base58-btc <a data-cite="CID#Multibase">Multibase</a> string. Let |computed|
+be the result.
+                    </li>
+                    <li>
+If |computed| does not equal |event|.`previousEventHash`, append an error to
+|errors|.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+Let |prevDidDocument| be |currentDidDocument|. If |event|.`operation`.`data`
+is present, set |currentDidDocument| to |event|.`operation`.`data`.
+                </li>
+                <li>
+If |opProof| is present, verify the operation proof:
+                  <ol class="algorithm">
+                    <li>
+Let |vmRef| be |opProof|.`verificationMethod`. Attempt to locate a matching key
+in |currentDidDocument|.`assertionMethod` by comparing |vmRef| against each
+key's full `id` or fragment suffix. Let |assertionKey| be the result, or null
+if not found.
+                    </li>
+                    <li>
+If |assertionKey| is null and |vmRef| begins with `did:key:`, compute the
+SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the UTF-8 encoded
+`did:key` URL (the portion before any `#` fragment). If that hash appears in
+|prevDidDocument|.`recovery`, treat this as a recovery key operation and
+extract the public key material directly from the `did:key` URL. Otherwise
+append an error to |errors|.
+                    </li>
+                    <li>
+Invoke the
+<a data-cite="VC-DATA-INTEGRITY#verify-proof">Verify Proof</a> algorithm
+from [[[VC-DATA-INTEGRITY]]] on |event| using |opProof| and the located
+verification key. If verification fails, append an error to |errors|.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+If the operation was signed by a recovery key (|assertionKey| was null and a
+recovery key was matched), verify the recovery hash rotation:
+                  <ol class="algorithm">
+                    <li>
+Compute the SHA3-256 hash of the recovery `did:key` URL as described above.
+Let |usedHash| be the result.
+                    </li>
+                    <li>
+If |currentDidDocument|.`recovery` still contains |usedHash|, append an error
+to |errors| — the used recovery hash MUST be removed from `recovery`.
+                    </li>
+                    <li>
+If |currentDidDocument|.`recovery` has fewer entries than
+|prevDidDocument|.`recovery`, append an error to |errors| — a new recovery
+hash MUST replace the consumed one.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+Let |opTime| be the parsed timestamp of |opProof|.`created` if present,
+otherwise null. Let |entryWitnessTime| be null.
+                </li>
+                <li>
+For each |witnessProof| in |trustedWitnessProofs|, perform the following:
+                  <ol class="algorithm">
+                    <li>
+Invoke the
+<a data-cite="VC-DATA-INTEGRITY#verify-proof">Verify Proof</a> algorithm
+from [[[VC-DATA-INTEGRITY]]] on |logEntry| using |witnessProof| and the public
+key extracted from the `did:key` URL in |witnessProof|.`verificationMethod`.
+If verification fails, append an error to |errors|.
+                    </li>
+                    <li>
+If |opTime| is not null and |witnessProof|.`created` is present, compute the
+absolute difference in minutes between |opTime| and the parsed timestamp of
+|witnessProof|.`created`. If the difference exceeds 5 minutes, append an error
+to |errors|.
+                    </li>
+                    <li>
+Update |entryWitnessTime| to be the maximum trusted witness timestamp seen for
+this entry so far.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+Check the [=heartbeat frequency=]: if |i| is greater than 0, and both
+|prevEntryWitnessTime| and |entryWitnessTime| are not null:
+                  <ol class="algorithm">
+                    <li>
+Let |heartbeatFrequency| be |prevDidDocument|.`heartbeatFrequency` if present,
+otherwise `P10Y`.
+                    </li>
+                    <li>
+If the elapsed time between |prevEntryWitnessTime| and |entryWitnessTime|
+exceeds the ISO 8601 duration |heartbeatFrequency|, append an error to
+|errors|.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+If |entryWitnessTime| is not null, set |prevEntryWitnessTime| to
+|entryWitnessTime|.
+                </li>
+              </ol>
+            </li>
+            <li>
+Let |valid| be true if |errors| is empty, otherwise false. Return a [=map=]
+containing |valid|, |errors|, and |didDocument| (set to |currentDidDocument|
+if |valid| is true, otherwise null).
             </li>
           </ol>
 
