@@ -976,14 +976,12 @@ is shown below:
 
           <p>
 The following algorithm specifies how to update an existing `did:cel`
-[=DID document=] and record the change in the [=cryptographic event log=]. The update
-operation consists of two phases: regenerating the cryptographic proof on the
-modified [=DID document=], and appending a [=hashlinked=] update event to the log. The
+[=DID document=] and record the change in the [=cryptographic event log=]. The
 algorithm takes a [=map=] |didDocument| (the modified [=DID document=]), a [=map=]
 |assertionMethod| (the key pair to use for signing), and a [=map=] |cel| (the
-existing [=cryptographic event log=]) as input. Output is the updated |didDocument|
-with a new proof and the updated |cel| with the new event appended, or an error.
-Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
+existing [=cryptographic event log=]) as input. Output is the updated |cel| with
+the new event appended, or an error. Whenever this algorithm encodes strings,
+it MUST use UTF-8 encoding.
           </p>
 
           <p class="issue" title="How much forking protection is enough?">
@@ -1001,89 +999,63 @@ detail the approach to provide adequate fork protection for a DID.
 
           <ol class="algorithm">
             <li>
-Update the proof on the [=DID Document=] by performing the following steps:
-              <ol class="algorithm">
-                <li>
-Let |newDidDocument| be a copy of |didDocument|.
-                </li>
-                <li>
-If |newDidDocument| contains a `proof` property, remove it. Any
-existing proof will be replaced with a new proof reflecting the current state
-of the document.
-                </li>
-                <li>
-Create a [=data integrity proof=] with the cryptosuite and a signer derived from
-|assertionMethod|. Let |proof| be the result of this step.
-                </li>
-                <li>
-Set |newDidDocument|.`proof` to |proof|.
-                </li>
-                <li>
-Set |didDocument| to |newDidDocument|.
-                </li>
-              </ol>
-            </li>
-            <li>
-Append the update event to the [=cryptographic event log=] by performing the
-following steps:
-              <ol class="algorithm">
-                <li>
 If |cel|.`log` does not contain any events, an error MUST be raised and
 SHOULD convey an error type of `MALFORMED_CEL_ERROR`.
+            </li>
+            <li>
+Create a hash link to the previous event:
+              <ol class="algorithm">
+                <li>
+Let |lastLogEntry| be the most recent entry in |cel|.`log`.
                 </li>
                 <li>
-Perform the following steps to create a hash link to the previous event:
-                  <ol class="algorithm">
-                    <li>
-Let |lastEvent| be the most recent event in |cel|.`log`, which will be the
-last entry in the array.
-                    </li>
-                    <li>
-Canonicalize |lastEvent| using JSON Canonicalization Scheme (JCS) as specified
-in [[RFC8785]]. Let |canonicalizedEvent| be the result.
-                    </li>
-                    <li>
+Canonicalize |lastLogEntry| using JSON Canonicalization Scheme (JCS) as
+specified in [[RFC8785]]. Let |canonicalizedEntry| be the result.
+                </li>
+                <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
-UTF-8 encoded |canonicalizedEvent|. Let |hash| be the result.
-                    </li>
-                    <li>
+UTF-8 encoded |canonicalizedEntry|. Let |hash| be the result.
+                </li>
+                <li>
 Encode |hash| using base58-btc encoding, prepending the
-<a data-cite="CID#Multibase">Multibase</a> (`z`) character to the encoding. Let
-|encodedHash| be the result.
-                    </li>
-                  </ol>
-                </li>
-                <li>
-Create a new event object ([=map=] |updateEvent|) with the following structure:
-                  <ol class="algorithm">
-                    <li>
-Set |updateEvent|.`event` to a new [=map=].
-                    </li>
-                    <li>
-Set |updateEvent|.`event`.`previousEventHash` to |encodedHash|.
-This creates the [=hashlinked=] chain connecting this event to the previous event.
-                    </li>
-                    <li>
-Set |updateEvent|.`event`.`operation` to a new [=map=].
-                    </li>
-                    <li>
-Set |updateEvent|.`event`.`operation`.`type` to the string `update`.
-                    </li>
-                    <li>
-Set |updateEvent|.`event`.`operation`.`data`
-to the updated |didDocument| (which now includes the new proof).
-                    </li>
-                  </ol>
-                </li>
-                <li>
-Append |updateEvent| to |cel|.`log`.
+<a data-cite="CID#Multibase">Multibase</a> (`z`) character to the encoding.
+Let |previousEventHash| be the result.
                 </li>
               </ol>
             </li>
             <li>
-Return the updated |didDocument| and updated |cel|. The |didDocument| now has
-a fresh cryptographic proof, and the |cel| contains a new [=hashlinked=] event
-recording the update operation.
+Create the update event object ([=map=] |updateEvent|):
+              <ol class="algorithm">
+                <li>
+Set |updateEvent|.`previousEventHash` to |previousEventHash|. This creates
+the [=hashlinked=] chain connecting this event to the previous entry. This value
+MUST be set before signing so that it is covered by the operation proof.
+                </li>
+                <li>
+Set |updateEvent|.`operation` to a new [=map=].
+                </li>
+                <li>
+Set |updateEvent|.`operation`.`type` to the string `update`.
+                </li>
+                <li>
+Set |updateEvent|.`operation`.`data` to the modified |didDocument|.
+                </li>
+              </ol>
+            </li>
+            <li>
+Generate a cryptographic proof for |updateEvent| using a cryptosuite compatible
+with |assertionMethod|, such as
+<a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>. Set the
+`proofPurpose` to `assertionMethod`. Set |updateEvent|.`proof` to the result.
+            </li>
+            <li>
+Create a new log entry ([=map=] |logEntry|) with an `event` property set to
+|updateEvent|. Append |logEntry| to |cel|.`log`.
+            </li>
+            <li>
+Return the updated |cel|. The |cel| now contains a new [=hashlinked=] event
+recording the update operation, with the operation proof covering
+`previousEventHash`.
             </li>
           </ol>
 
