@@ -894,6 +894,33 @@ and resistance to single points of failure in the DID method infrastructure.
         <h3>Read</h3>
 
         <p>
+The read operation resolves a `did:cel` [=DID=] by retrieving and fully
+validating its [=cryptographic event log=], then returning the most recent
+[=DID document=] state. This is the primary mechanism through which
+[=verifiers=] interact with the `did:cel` method. The operation confirms
+that the log's hash chain is intact, that every event was signed by an
+authorized key, and that each event was independently attested by one
+or more trusted [=witnesses=] within acceptable time bounds.
+        </p>
+
+        <p>
+Trust in [=witness=] attestations is governed by a set of
+|trustedWitnesses| supplied by the caller. Each entry identifies a
+[=witness=] by DID and specifies the time range during which that
+[=witness=] is considered trustworthy, enabling [=verifiers=] to enforce
+their own [=witness=] policies without requiring changes to the
+[=cryptographic event log=] itself. This separation allows [=witness=]
+trust to evolve independently of the DID history it attests to.
+        </p>
+
+        <p>
+The read operation also supports historical resolution through an
+optional |versionTime| parameter. When provided, only log entries
+witnessed at or before that point in time are considered, allowing
+[=verifiers=] to reconstruct the exact [=DID document=] state at any
+past moment. This capability is essential for verifying [=data
+integrity proofs=] or [=verifiable credentials=] that were issued using
+an older version of a [=DID document=].
         </p>
 
         <pre class="example nohighlight" title="Cryptographic event log where a read is performed"
