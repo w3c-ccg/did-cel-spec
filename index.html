@@ -657,13 +657,19 @@ Set the verification method's `type` to `Multikey`.
 Set the verification method's `publicKeyMultibase` to
 |publicKey|.`publicKeyMultibase`.
                     </li>
-                    <li>
-Add a <a data-cite="CID#services">service entry</a> where the `type` is
-`CelStorageService` and the `serviceEndpoint` is a list of URLs that the
-controller will use to store the canonical version of the
-[=cryptographic event log=].
-                    </li>
                   </ol>
+                </li>
+                <li>
+Set |didDocument|.`heartbeatFrequency` to `P10Y` or to a controller-supplied
+ISO 8601 duration string. This value specifies the maximum elapsed time allowed
+between consecutive [=witnessed=] events before [=verifiers=] consider the [=DID=]
+to be deactivated.
+                </li>
+                <li>
+Set |didDocument|.`service` to a <a data-cite="CID#services">service entry</a>
+where the `type` is `CelStorageService` and the `serviceEndpoint` is an array
+of URLs that the controller will use to store the canonical version of the
+[=cryptographic event log=].
                 </li>
               </ol>
             </li>
@@ -795,8 +801,8 @@ algorithm encodes strings, it MUST use UTF-8 encoding.
 Initialize an empty array |proofs| to collect [=witness=] attestations.
             </li>
             <li>
-Let |event| be the most recent event in |cel|.|log|. This is obtained by
-accessing the last event in the array.
+Let |logEntry| be the most recent entry in |cel|.`log`. This is obtained by
+accessing the last element in the array. Let |event| be |logEntry|.`event`.
             </li>
             <li>
 Let |witnesses| be an array of [=witness=] endpoint URLs that are trusted by the
@@ -831,10 +837,12 @@ Append |proof| to the |proofs| array.
               </ol>
             </li>
             <li>
-Set |event|.`proof` to the |proofs| array containing attestations from all
+Set |logEntry|.`proof` to the |proofs| array containing attestations from all
 [=witnesses=]. Each proof in the array represents an independent cryptographic
 commitment by a [=witness=] that the event is valid and has been [=witnessed=] at a
-specific point in time.
+specific point in time. Note that |logEntry|.`event`.`proof` is the operation
+proof signed by the [=DID controller=] and is distinct from the [=witness=] proofs
+stored on |logEntry|.`proof`.
             </li>
           </ol>
 
