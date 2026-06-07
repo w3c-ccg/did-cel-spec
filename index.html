@@ -666,9 +666,10 @@ between consecutive [=witnessed=] events before [=verifiers=] consider the [=DID
 to be deactivated.
                 </li>
                 <li>
-Set |didDocument|.`service` to a <a data-cite="CID#services">service entry</a>
-where the `type` is `CelStorageService` and the `serviceEndpoint` is an array
-of URLs that the controller will use to store the canonical version of the
+Set |didDocument|.`service` to an array containing a
+<a data-cite="CID#services">service entry</a> where the `type` is
+`CelStorageService` and the `serviceEndpoint` is an array of URLs that the
+controller will use to store the canonical version of the
 [=cryptographic event log=].
                 </li>
               </ol>
