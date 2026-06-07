@@ -1007,8 +1007,12 @@ Let |errors| be an empty array. Verify that the [=DID=] identifier is valid by
 performing the following steps:
               <ol class="algorithm">
                 <li>
-Let |firstEvent| be |log|[0].`event`. Canonicalize |firstEvent| using JCS
-[[RFC8785]]. Compute the SHA3-256 <a
+Let |firstEvent| be |log|[0].`event`. Let |firstDidDocument| be a copy of
+|firstEvent|.`operation`.`data` with the `id` property and the `controller`
+property of each embedded verification method removed. These properties are
+set after the hash is computed during the Create operation and must be
+excluded to reproduce the original hash input. Canonicalize |firstDidDocument|
+using JCS [[RFC8785]]. Compute the SHA3-256 <a
 data-cite="CID#Multihash">Multihash</a> of the UTF-8 encoded result and
 encode it as a base58-btc <a data-cite="CID#Multibase">Multibase</a> string.
 Let |expectedId| be the concatenation of `did:cel:` and that encoded hash.
@@ -1046,10 +1050,10 @@ If |i| is greater than 0, verify the hash chain:
                   <ol class="algorithm">
                     <li>
 Let |prevLog| be the subarray of |log| from index 0 up to (not including) |i|.
-Canonicalize the last entry in |prevLog| using JCS [[RFC8785]], compute its
-SHA3-256 <a data-cite="CID#Multihash">Multihash</a>, and encode it as a
-base58-btc <a data-cite="CID#Multibase">Multibase</a> string. Let |computed|
-be the result.
+Canonicalize the `.event` of the last entry in |prevLog| using JCS [[RFC8785]],
+compute its SHA3-256 <a data-cite="CID#Multihash">Multihash</a>, and encode it
+as a base58-btc <a data-cite="CID#Multibase">Multibase</a> string. Let
+|computed| be the result.
                     </li>
                     <li>
 If |computed| does not equal |event|.`previousEventHash`, append an error to
@@ -1240,8 +1244,8 @@ Create a hash link to the previous event:
 Let |lastLogEntry| be the most recent entry in |cel|.`log`.
                 </li>
                 <li>
-Canonicalize |lastLogEntry| using JSON Canonicalization Scheme (JCS) as
-specified in [[RFC8785]]. Let |canonicalizedEntry| be the result.
+Canonicalize |lastLogEntry|.`event` using JSON Canonicalization Scheme (JCS)
+as specified in [[RFC8785]]. Let |canonicalizedEntry| be the result.
                 </li>
                 <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
@@ -1358,12 +1362,12 @@ error. Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
 Create a hash link to the previous event:
               <ol class="algorithm">
                 <li>
-Let |lastEvent| be the most recent event in |cel|.`log`, which will be the
-last entry in the array.
+Let |lastLogEntry| be the most recent entry in |cel|.`log`, which will be the
+last element in the array.
                 </li>
                 <li>
-Canonicalize |lastEvent| using JSON Canonicalization Scheme (JCS) as specified
-in [[RFC8785]]. Let |canonicalizedEvent| be the result.
+Canonicalize |lastLogEntry|.`event` using JSON Canonicalization Scheme (JCS)
+as specified in [[RFC8785]]. Let |canonicalizedEvent| be the result.
                 </li>
                 <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
@@ -1496,12 +1500,12 @@ encodes strings, it MUST use UTF-8 encoding.
 Create a hash link to the previous event:
               <ol class="algorithm">
                 <li>
-Let |lastEvent| be the most recent event in |cel|.`log`, which will be the
-last entry in the array.
+Let |lastLogEntry| be the most recent entry in |cel|.`log`, which will be the
+last element in the array.
                 </li>
                 <li>
-Canonicalize |lastEvent| using JSON Canonicalization Scheme (JCS) as specified
-in [[RFC8785]]. Let |canonicalizedEvent| be the result.
+Canonicalize |lastLogEntry|.`event` using JSON Canonicalization Scheme (JCS)
+as specified in [[RFC8785]]. Let |canonicalizedEvent| be the result.
                 </li>
                 <li>
 Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
