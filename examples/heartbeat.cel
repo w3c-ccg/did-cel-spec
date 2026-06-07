@@ -22,14 +22,16 @@
             "recovery": [
               "zW1gSHA3256HashOfDidKeyZDnaex7wVcG2FaWwCz7fGiA72za5bhy83yq"
             ],
-            "service": {
-              "type": "CelStorageService",
-              "serviceEndpoint": [
-                "https://storage.gamma.example/v1",
-                "https://2001:db8:85a3::8a2e:370:7334/v1",
-                "https://celstorageiu7vnjjbwkhpilnemxj7ase3mhbshg7kx5tfydaniltxjqhy.onion/"
-              ]
-            }
+            "service": [
+              {
+                "type": "CelStorageService",
+                "serviceEndpoint": [
+                  "https://storage.gamma.example/v1",
+                  "https://2001:db8:85a3::8a2e:370:7334/v1",
+                  "https://celstorageiu7vnjjbwkhpilnemxj7ase3mhbshg7kx5tfydaniltxjqhy.onion/"
+                ]
+              }
+            ]
           }
         },
         "proof": {

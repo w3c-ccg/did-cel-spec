@@ -22,14 +22,16 @@
             "recovery": [
               "zW1gSHA3256HashOfDidKeyZDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1"
             ],
-            "service": {
-              "type": "CelStorageService",
-              "serviceEndpoint": [
-                "https://storage.gamma.example/v1",
-                "https://2001:db8:85a3::8a2e:370:7334/v1",
-                "https://celstorageiu7vnjjbwkhpilnemxj7ase3mhbshg7kx5tfydaniltxjqhy.onion/"
-              ]
-            }
+            "service": [
+              {
+                "type": "CelStorageService",
+                "serviceEndpoint": [
+                  "https://storage.gamma.example/v1",
+                  "https://2001:db8:85a3::8a2e:370:7334/v1",
+                  "https://celstorageiu7vnjjbwkhpilnemxj7ase3mhbshg7kx5tfydaniltxjqhy.onion/"
+                ]
+              }
+            ]
           }
         },
         "proof": {
@@ -99,14 +101,16 @@
             "recovery": [
               "zW1gSHA3256HashOfDidKeyZDnaexiPSQFLopHAZaY7JWzwZqC1PwQ3NQ1"
             ],
-            "service": {
-              "type": "CelStorageService",
-              "serviceEndpoint": [
-                "https://storage.gamma.example/v1",
-                "https://2001:db8:85a3::8a2e:370:7334/v1",
-                "https://celstorageiu7vnjjbwkhpilnemxj7ase3mhbshg7kx5tfydaniltxjqhy.onion/"
-              ]
-            }
+            "service": [
+              {
+                "type": "CelStorageService",
+                "serviceEndpoint": [
+                  "https://storage.gamma.example/v1",
+                  "https://2001:db8:85a3::8a2e:370:7334/v1",
+                  "https://celstorageiu7vnjjbwkhpilnemxj7ase3mhbshg7kx5tfydaniltxjqhy.onion/"
+                ]
+              }
+            ]
           }
         },
         "proof": {
