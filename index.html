@@ -1124,10 +1124,13 @@ key extracted from the `did:key` URL in |witnessProof|.`verificationMethod`.
 If verification fails, append an error to |errors|.
                     </li>
                     <li>
-If |opTime| is not null and |witnessProof|.`created` is present, compute the
-absolute difference in minutes between |opTime| and the parsed timestamp of
-|witnessProof|.`created`. If the difference exceeds 5 minutes, append an error
-to |errors|.
+Witness proofs MUST contain a `created` timestamp. If |witnessProof|.`created`
+is absent, append an error to |errors|.
+                    </li>
+                    <li>
+If |opTime| is not null, compute the absolute difference in minutes between
+|opTime| and the parsed timestamp of |witnessProof|.`created`. If the difference
+exceeds 5 minutes, append an error to |errors|.
                     </li>
                     <li>
 Update |entryWitnessTime| to be the maximum trusted witness timestamp seen for
