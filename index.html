@@ -383,9 +383,33 @@ used throughout this specification.
 
           <dt><dfn class="export" data-lt="CEL">cryptographic event log</dfn></dt>
           <dd>
-A [=hashlinked=] chain of events that records the complete history of operations
-performed on a document with each event cryptographically tied to the
-preceding event.
+A [=hashlinked=] chain of [=events=] representing the complete set
+of state transitions and [=operations=] performed on a document,
+with each [=event=] cryptographically tied to the preceding [=event=].
+The log is an append-only ordered collection preserving the
+sequence of recorded [=events=].
+          </dd>
+
+          <dt><dfn class="export" data-lt="event">event</dfn></dt>
+          <dd>
+A self-contained object representing a single change of state
+or observable occurrence. An event records an [=operation=] in the
+[=cryptographic event log=]. Its integrity is asserted by the
+DID controller.
+          </dd>
+
+          <dt><dfn class="export" data-lt="eventEntry">event entry</dfn></dt>
+          <dd>
+A container object within a log that holds a single [=event=]. Its
+existence is cryptographically attested by oblivious
+[=witnesses=].
+          </dd>
+
+          <dt><dfn class="export" data-lt="genesisDidDocument">genesis DID document</dfn>
+          <dd>
+The authoritative origin from which the `did:cel` identifier is generated and 
+which serves as the reference for inception verification. This original DID document is 
+the canonical basis of the identifier.
           </dd>
 
           <dt><dfn class="export" data-lt="hashlinked|hashlinking">hashlink</dfn></dt>
@@ -395,11 +419,40 @@ observer can cryptographically verify that the contents of the data that is
 pointed to has not been modified since the link was created.
           </dd>
 
+          <dt><dfn class="export" data-lt="operation">operation</dfn></dt>
+          <dd>
+A deterministic state transition instruction that specifies how to
+update a DID Document and its lifecycle. The operation is 
+the core semantic content of an [=event=] and defines the intended state change.
+          </dd>
+
+          <dt><dfn class="export" data-lt="operationData">operation data</dfn></dt>
+          <dd>
+The payload of an [=operation=] containing the concrete document
+being created, updated, or otherwise affected.
+          </dd>
+
+          <dt><dfn class="export" data-lt="proof">proof</dfn></dt>
+          <dd>
+A cryptographic object associated with an [=event=] that provides
+integrity and authenticity guarantees for the [=event=].
+          </dd>
+
           <dt><dfn class="export">self-certifying identifier</dfn></dt>
           <dd>
 A type of identifier derived directly from the cryptographic hash of data. The
 approach creates an intrinsic binding between the identifier and its content
 without requiring external registration or validation.
+          </dd>
+
+          <dt><dfn class="export" data-lt="storageEndpoint">storage endpoint</dfn></dt>
+          <dd>
+A location from which a [=cryptographic event log=] is retrieved. 
+A storage endpoint is identified by a URL and MUST resolve in
+[=cryptographic event log=] associated with a given `did:cel`
+identifier. Multiple storage endpoints SHOULD host identical copies of the same
+log, and implementations MUST treat them as interchangeable sources of data,
+relying on cryptographic verification rather than endpoint trust.
           </dd>
 
           <dt><dfn class="export" data-lt="witnesses|witnessed|witnessing">witness</dfn></dt>
@@ -411,7 +464,6 @@ attested to. Multiple <strong>witnesses</strong> can attest to the same data,
 and the process of creating such attestations is called
 <strong>witnessing</strong>.
           </dd>
-
         </dl>
       </section>
 
@@ -446,7 +498,7 @@ of a series of transformation functions on the raw public key bytes:
       </p>
 
       <tt>
-did-cel-identifier := did:cel:MULTIBASE(base58-btc, MULTICODEC(sha3-256, JCS(initial-event-log-entry)))
+did-cel-identifier := did:cel:MULTIBASE(base58-btc, MULTIHASH(sha3-256, JCS(genesisDidDocument)))
       </tt>
 
       <p>
