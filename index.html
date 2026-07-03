@@ -589,6 +589,294 @@ privacy benefits.
         </p>
       </section>
 
+      <section class="normative">
+        <h3>Witness HTTP API</h3>
+
+        <p>
+A [=witness=] service exposes a single HTTP endpoint, called the
+<dfn class="export" data-lt="witness endpoints">witness endpoint</dfn>, that
+accepts a cryptographic digest and returns a [=data integrity proof=] over
+that digest. The URL of a [=witness endpoint=] is deployment-specific and is
+advertised by the [=witness=] operator out of band. The [=witness endpoint=]
+MUST be served over HTTPS. All requests and responses use JSON. Because
+witnessing is oblivious, the endpoint does not require authentication.
+[=Witness=] services SHOULD support cross-origin resource sharing (CORS),
+including HTTP OPTIONS preflight requests, so that browser-based
+[=DID controllers=] can request witnessing directly.
+        </p>
+
+        <section class="normative">
+          <h4>Witness Request</h4>
+
+          <p>
+To request [=witnessing=], a client performs an HTTP POST on the
+[=witness endpoint=] with a `Content-Type` header value of
+`application/json`. The request body MUST be a JSON object containing the
+following properties and no other properties:
+          </p>
+
+          <dl>
+            <dt>`digestMultibase`</dt>
+            <dd>
+A string that MUST be present and MUST be a
+<a data-cite="CID#Multibase">Multibase</a> base58-btc encoded (`z`-prefixed)
+SHA2-256 <a data-cite="CID#Multihash">Multihash</a> of the data to be
+witnessed. The encoded value MUST decode to exactly 34 bytes: the two-byte
+multihash header (`0x12`, `0x20`) followed by the 32-byte digest. For the
+`did:cel` method, the digest is computed over the UTF-8 encoded,
+JCS-canonicalized [[RFC8785]] event being witnessed, as described in
+<a href="#document-witnessing-algorithm"></a>.
+            </dd>
+            <dt>`options`</dt>
+            <dd>
+A map that MAY be present. When present, it MAY contain a single
+`cryptosuite` property whose value is a string naming the data integrity
+cryptosuite that the [=witness=] is asked to use when generating its proof,
+such as <a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>,
+<a data-cite="VC-DI-ECDSA#ecdsa-rdfc-2019">ecdsa-rdfc-2019</a>,
+`mldsa44-jcs-2024`, or `mldsa44-rdfc-2024`. When the `cryptosuite` property
+is absent, the [=witness=] uses its default cryptosuite. A [=witness=] MAY
+support any set of data integrity cryptosuites; a request naming an
+unsupported cryptosuite is rejected as described in
+<a href="#witness-errors"></a>.
+            </dd>
+          </dl>
+
+          <p class="note" title="Why is the digest a SHA2-256 multihash?">
+The digest provided in `digestMultibase` substitutes for the document hash
+when the [=witness=] constructs its [=data integrity proof=]. The supported
+data integrity cryptosuites compute the document hash using SHA-256, so the
+digest sent to the [=witness=] is a SHA2-256 multihash. This is distinct
+from the SHA3-256 hashes used elsewhere in this specification for
+[=hashlinks=] and [=DID=] identifier derivation.
+          </p>
+
+          <p>
+An example of a [=witnessing=] request for the create event shown in
+<a href="#create"></a> is provided below:
+          </p>
+
+          <pre class="example nohighlight" title="Witness HTTP API request">
+POST /witness HTTP/1.1
+Host: red-witness.example
+Content-Type: application/json
+
+{
+  "digestMultibase": "zQmUVC4h7xBquz6h25UDyZbQUnt4aVYexXXwyEeh34VGHSA"
+}
+          </pre>
+        </section>
+
+        <section class="normative">
+          <h4>Witness Response</h4>
+
+          <p>
+When a [=witnessing=] request is valid, the [=witness=] responds with an
+HTTP status code of `200` and a `Content-Type` header value of
+`application/json`. The response body MUST be a JSON object containing a
+single `proof` property whose value is a [=data integrity proof=] map
+containing the following properties:
+          </p>
+
+          <dl>
+            <dt>`type`</dt>
+            <dd>
+A string that MUST be present with the value `DataIntegrityProof`.
+            </dd>
+            <dt>`cryptosuite`</dt>
+            <dd>
+A string that MUST be present and MUST identify the data integrity
+cryptosuite used to generate the proof. When the request contained an
+`options`.`cryptosuite` value, this value MUST match it.
+            </dd>
+            <dt>`created`</dt>
+            <dd>
+A string that MUST be present and MUST be an [[XMLSCHEMA11-2]] `dateTime`
+expressing when the [=witness=] generated the proof. Verifiers depend on
+this value when enforcing the [=heartbeat frequency=] and the maximum
+allowed deviation between operation proof and [=witness=] proof timestamps,
+as described in <a href="#document-read-algorithm"></a>.
+            </dd>
+            <dt>`proofPurpose`</dt>
+            <dd>
+A string that MUST be present with the value `assertionMethod`.
+            </dd>
+            <dt>`verificationMethod`</dt>
+            <dd>
+A string that MUST be present and MUST be a URL that can be dereferenced to
+obtain the public key of the [=witness=], such as a `did:key` or `did:web`
+URL. The DID portion of this value is what [=verifiers=] match against
+their recognized [=witness=] lists.
+            </dd>
+            <dt>`proofValue`</dt>
+            <dd>
+A string that MUST be present and MUST be a
+<a data-cite="CID#Multibase">Multibase</a>-encoded signature as specified by
+the cryptosuite in use; for example, base58-btc (`z`-prefixed) for the ECDSA
+cryptosuites and base64-url (`u`-prefixed) for the ML-DSA cryptosuites.
+            </dd>
+          </dl>
+
+          <p>
+The proof MAY also include an `@context` property referencing the Data
+Integrity context, such as `https://w3id.org/security/data-integrity/v2`.
+          </p>
+
+          <p>
+An example of a [=witnessing=] response is provided below:
+          </p>
+
+          <pre class="example nohighlight" title="Witness HTTP API response">
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "proof": {
+    "@context": "https://w3id.org/security/data-integrity/v2",
+    "type": "DataIntegrityProof",
+    "created": "2026-07-03T18:45:28Z",
+    "cryptosuite": "ecdsa-jcs-2019",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z2LzSiVS52b5g9UhV1yzoFRq8RDmP8RwDGxaos6SQEa1Kw5zNu8Mr7YGRYFP2Dw7buWfTxKueDGnvdqGBZf2vukH5",
+    "verificationMethod": "did:web:red-witness.example#vm-red-1"
+  }
+}
+          </pre>
+        </section>
+
+        <section class="normative">
+          <h4>Witness Proof Generation Algorithm</h4>
+
+          <p>
+The following algorithm specifies how a [=witness=] generates the proof
+returned in a [=witnessing=] response. Because the [=witness=] receives only
+a digest, the digest substitutes for the document hash that the data
+integrity cryptosuite would otherwise compute; the resulting proof is
+verifiable using the cryptosuite's standard proof verification algorithm
+against the original document. The algorithm takes a string
+|digestMultibase| and a cryptosuite identifier |cryptosuite| as input.
+Output is a [=data integrity proof=] map, or an error. Whenever this
+algorithm encodes strings, it MUST use UTF-8 encoding.
+          </p>
+
+          <ol class="algorithm">
+            <li>
+Verify that |digestMultibase| begins with the `z` character and that its
+base58-btc decoding is exactly 34 bytes beginning with the SHA2-256
+multihash header (`0x12`, `0x20`). If either check fails, an error MUST be
+raised as described in <a href="#witness-errors"></a>. Let |rawDigest| be
+the final 32 bytes of the decoded value.
+            </li>
+            <li>
+Let |proofOptions| be a map containing `type` set to `DataIntegrityProof`,
+`cryptosuite` set to |cryptosuite|, `proofPurpose` set to
+`assertionMethod`, `verificationMethod` set to a URL that can be
+dereferenced to the [=witness=]'s public key, and `created` set to the
+current [[XMLSCHEMA11-2]] `dateTime`.
+            </li>
+            <li>
+Canonicalize |proofOptions| using the canonicalization scheme of
+|cryptosuite|: the JSON Canonicalization Scheme [[RFC8785]] for JCS-based
+cryptosuites, or RDF Dataset Canonicalization, after adding the Data
+Integrity `@context` to |proofOptions|, for RDFC-based cryptosuites. Let
+|canonicalProofOptions| be the result.
+            </li>
+            <li>
+Compute the SHA-256 hash of the UTF-8 encoded |canonicalProofOptions|. Let
+|proofHash| be the result.
+            </li>
+            <li>
+Let |verifyData| be the concatenation of |proofHash| followed by
+|rawDigest|.
+            </li>
+            <li>
+Sign |verifyData| using the [=witness=]'s private key for |cryptosuite|.
+Let |signatureBytes| be the result.
+            </li>
+            <li>
+Set |proofOptions|.`proofValue` to the
+<a data-cite="CID#Multibase">Multibase</a> encoding of |signatureBytes|
+specified by |cryptosuite|. Return |proofOptions| as the proof.
+            </li>
+          </ol>
+        </section>
+
+        <section class="normative" id="witness-errors">
+          <h4>Witness Errors</h4>
+
+          <p>
+When a [=witnessing=] request cannot be processed, the [=witness=] MUST
+respond with an appropriate HTTP status code — `400` when the request is
+invalid, or a `5xx` status code when the [=witness=] encounters an internal
+failure — and SHOULD use [[RFC9457]] to encode the error as a
+ProblemDetails [=map=] with a `Content-Type` header value of
+`application/problem+json`. If [[RFC9457]] is used:
+          </p>
+
+          <ul>
+            <li>
+The `type` value of the error object MUST be a URL that starts with the
+value `https://w3id.org/security#` and ends with the value in the section
+listed below.
+            </li>
+            <li>
+The `title` value SHOULD provide a short but specific human-readable string
+for the error.
+            </li>
+            <li>
+The `detail` value SHOULD provide a longer human-readable string for the
+error.
+            </li>
+          </ul>
+
+          <dl>
+            <dt id="MALFORMED_WITNESS_REQUEST">MALFORMED_WITNESS_REQUEST</dt>
+            <dd>
+The request body is not a JSON object, does not contain a `digestMultibase`
+property, or contains properties other than those defined in this
+specification. The HTTP status code MUST be `400`.
+            </dd>
+            <dt id="INVALID_DIGEST_MULTIBASE">INVALID_DIGEST_MULTIBASE</dt>
+            <dd>
+The `digestMultibase` value does not begin with the `z` character, or does
+not decode to a 34-byte SHA2-256 multihash. The HTTP status code MUST be
+`400`.
+            </dd>
+            <dt id="UNSUPPORTED_CRYPTOSUITE">UNSUPPORTED_CRYPTOSUITE</dt>
+            <dd>
+The requested `options`.`cryptosuite` value is not supported by the
+[=witness=]. The HTTP status code MUST be `400`.
+            </dd>
+            <dt id="PROOF_GENERATION_ERROR">PROOF_GENERATION_ERROR</dt>
+            <dd>
+The [=witness=] encountered an internal failure while generating the proof.
+The HTTP status code MUST be a `5xx` value.
+            </dd>
+          </dl>
+
+          <p>
+An example of a [=witnessing=] error is provided below:
+          </p>
+
+          <pre class="example nohighlight" title="Witness HTTP API error">
+HTTP/1.1 400 Bad Request
+Content-Type: application/problem+json
+
+{
+  "type": "https://w3id.org/didcel#INVALID_DIGEST_MULTIBASE",
+  "title": "Invalid digest multibase value",
+  "detail": "digestMultibase must be a base58btc-encoded sha2-256 multihash value"
+}
+          </pre>
+
+          <p>
+Clients treat any non-`200` response as a [=witnessing=] failure, as
+described in <a href="#document-witnessing-algorithm"></a>.
+          </p>
+        </section>
+
+      </section>
+
     </section>
 
     <section class="normative">
@@ -854,8 +1142,8 @@ Let |logEntry| be the most recent entry in |cel|.`log`. This is obtained by
 accessing the last element in the array. Let |event| be |logEntry|.`event`.
             </li>
             <li>
-Let |witnesses| be an array of [=witness=] endpoint URLs that are trusted by the
-controller of the [=DID=].
+Let |witnesses| be an array of [=witness endpoint=] URLs that are trusted by
+the controller of the [=DID=].
             </li>
             <li>
 For each |witness| endpoint in |witnesses|, perform the following steps:
@@ -865,8 +1153,11 @@ Canonicalize |event| using the JSON Canonicalization Scheme (JCS) as specified
 in [[RFC8785]]. Let |canonicalizedEvent| be the result.
                 </li>
                 <li>
-Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
-UTF-8 encoded |canonicalizedEvent|. Let |hash| be the result.
+Compute the SHA2-256 <a data-cite="CID#Multihash">Multihash</a> of the
+UTF-8 encoded |canonicalizedEvent|. Let |hash| be the result. A SHA2-256
+digest is used, rather than the SHA3-256 digests used for [=hashlinks=],
+because the digest serves as the document hash in the [=witness=]'s
+[=data integrity proof=], as described in <a href="#witness-http-api"></a>.
                 </li>
                 <li>
 Encode |hash| using base58-btc encoding, prepending the
@@ -874,8 +1165,9 @@ Encode |hash| using base58-btc encoding, prepending the
 |encodedHash| be the result.
                 </li>
                 <li>
-Send a [=witnessing=] request to the |witness| by performing an HTTP POST on the
-[=witness=] endpoint. The body of the POST is a JSON object containing a
+Send a [=witnessing=] request to the |witness| by performing an HTTP POST on
+the [=witness endpoint=], as described in <a href="#witness-http-api"></a>.
+The body of the POST is a JSON object containing a
 `digestMultibase` property with |encodedHash| as the associated value. Let
 |proof| be the result. If [=witnessing=] fails, an error MUST be raised and SHOULD
 convey an error type of `WITNESSING_ERROR`.
