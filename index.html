@@ -357,9 +357,9 @@ When a [=verifier=] needs to validate a [=DID=], the controller provides the
 [=DID=] and a storage location that can be used to retrieve the [=cryptographic
 event log=] from the storage services. The [=verifier=] then downloads the log
 and verifies the [=hashlinked=] chain integrity. It does this by checking that
-operation proofs are signed by authorized keys from the [=DID document=], the
-[=hashlinks=] are correct, the operations performed are valid, and ensures that
-[=witness=] proofs meet their requirements. This separation of concerns between
+operation proofs are signed by [=heartbeat keys=] committed to in the
+[=DID document=], the [=hashlinks=] are correct, the operations performed are
+valid, and ensures that [=witness=] proofs meet their requirements. This separation of concerns between
 controllers, [=witnesses=], storage, and verification enables a fully
 decentralized system where no single party has unilateral control.
         </p>
@@ -386,6 +386,31 @@ used throughout this specification.
 A [=hashlinked=] chain of events that records the complete history of operations
 performed on a document with each event cryptographically tied to the
 preceding event.
+          </dd>
+
+          <dt><dfn class="export" data-lt="heartbeat keys">heartbeat key</dfn></dt>
+          <dd>
+A cryptographic key pair that a [=DID controller=] commits to in advance by
+placing a [=heartbeat hash=] of the key in the `heartbeat` array of a
+[=DID document=]. The next event appended to the [=cryptographic event log=]
+is signed by a committed <strong>heartbeat key</strong>, expressed as a
+`did:key` URL, which proves continued control without exposing the key before
+it is used.
+          </dd>
+
+          <dt><dfn class="export" data-lt="heartbeat hashes">heartbeat hash</dfn></dt>
+          <dd>
+A Multibase base58-btc encoded SHA3-256 Multihash of the `did:key` URL of a
+[=heartbeat key=], stored in the `heartbeat` array of a [=DID document=] as a
+commitment to that key.
+          </dd>
+
+          <dt><dfn class="export">heartbeat frequency</dfn></dt>
+          <dd>
+An ISO 8601 duration, expressed in the `heartbeatFrequency` property of a
+[=DID document=], that establishes the maximum amount of time allowed between
+consecutive [=witnessed=] events in a [=cryptographic event log=] before
+[=verifiers=] consider the associated [=DID=] to be deactivated.
           </dd>
 
           <dt><dfn class="export" data-lt="hashlinked|hashlinking">hashlink</dfn></dt>
@@ -427,8 +452,9 @@ The format for the `did:cel` method conforms to the [[[DID]]] specification and
 is simple. It consists of the `did:cel` prefix, followed by a <a
 data-cite="CID#Multibase">Multibase</a> base58-btc encoded value
 that is a concatenation of the <a data-cite="CID#Multihash">Multihash</a>
-identifier and the corresponding cryptographic digest for the initial
-[=cryptographic event log=] entry.
+identifier and the corresponding cryptographic digest of the initial
+[=DID document=], as it exists before the `id` property and any verification
+method `controller` properties are set.
       </p>
 
       <p>
@@ -442,11 +468,11 @@ mb-value       := z[a-km-zA-HJ-NP-Z1-9]+
 
       <p>
 Alternatively, the encoding rules can also be thought of as the application
-of a series of transformation functions on the raw public key bytes:
+of a series of transformation functions on the initial [=DID document=]:
       </p>
 
       <tt>
-did-cel-identifier := did:cel:MULTIBASE(base58-btc, MULTICODEC(sha3-256, JCS(initial-event-log-entry)))
+did-cel-identifier := did:cel:MULTIBASE(base58-btc, MULTIHASH(sha3-256, JCS(initial-did-document)))
       </tt>
 
       <p>
@@ -454,7 +480,7 @@ A simple example of a valid `did:cel` DID is:
       </p>
 
       <pre class="example nohighlight" title="A valid did:cel identifier">
-did:cel:zW1jPC3ViLfgPJX6KaPMhymin3LpATUgYTS7N58FLHtQ4HE
+did:cel:zW1qGEYC4LTSRhQww15brUCCLDvHxW4bZoEsGtFMqZVYzQv
       </pre>
 
     </section>
@@ -577,12 +603,26 @@ The following section outlines the DID operations for the `did:cel` method.
 
         <p>
 The create operation establishes a new `did:cel` [=DID document=] with a
-[=self-certifying identifier=] derived from the document's cryptographic hash. This
-operation generates an initial cryptographic key pair, constructs a [=DID document=] containing
-the public key as an assertion method, and adds a [=data integrity proof=] to
-the document. This approach ensures that the [=DID=] is intrinsically
-bound to the document's initial state, providing strong integrity guarantees
-without requiring external registration.
+[=self-certifying identifier=] derived from the document's cryptographic hash.
+This operation generates an initial [=heartbeat key=], constructs a
+[=DID document=] containing a [=heartbeat hash=] that commits to that key, and
+signs the create event with the [=heartbeat key=], expressed as a `did:key`
+URL, using a [=data integrity proof=]. This approach ensures that the [=DID=]
+is intrinsically bound to the document's initial state, providing strong
+integrity guarantees without requiring external registration. Verification
+methods, such as assertion methods and authentication methods, are not
+required at creation time and are typically added afterwards through an
+update operation.
+        </p>
+
+        <p class="note" title="Generating heartbeat keys">
+The heartbeat mechanism is based on committing to a hash of a key; the
+corresponding key is then used to sign the next event, as a `did:key`, that
+is appended to the [=cryptographic event log=]. A key derivation function,
+such as an HKDF, can be used to deterministically generate successive
+[=heartbeat keys=] from a single master secret, which reduces the amount of
+key material that a [=DID controller=] needs to store. Other approaches, such
+as generating and storing independent random keys, are also allowed.
         </p>
 
         <p>
@@ -610,29 +650,44 @@ An example of a [=cryptographic event log=] containing the creation event for a
 
           <p>
 The following algorithm specifies how to create a new `did:cel` DID
-document with an initial verification method and establish a cryptographic event
+document with an initial [=heartbeat hash=] and establish a cryptographic event
 log. The algorithm takes an optional [=map=] |options| as input. The |options|
-map MAY contain a |keyType| property specifying an cryptographic key type to use
-(defaults to `P-256`). Output is a [=map=] containing the generated
-|didDocument|, the associated |keyPair|, and the initial
-|cryptographicEventLog|, or an error. Whenever this algorithm encodes strings,
-it MUST use UTF-8 encoding.
+map MAY contain a |heartbeatFrequency| property specifying an ISO 8601
+duration (defaults to `P1M`) and a |service| property containing an array of
+<a data-cite="CID#services">service entries</a>. Output is a [=map=]
+containing the generated |didDocument|, the associated |heartbeatKeyPair|, and
+the initial |cryptographicEventLog|, or an error. Whenever this algorithm
+encodes strings, it MUST use UTF-8 encoding.
           </p>
 
           <ol class="algorithm">
             <li>
-Let |keyType| be set to |options|.|keyType| if present, otherwise set to
-`P-256`. The |keyType| value MUST be a valid keyType identifier
-supported by the <a data-cite="CID#Multikey">Multikey</a> specification.
-            </li>
-            <li>
-Generate a new key pair based on |keyType|. Let |keyPair| be the result. If key
-generation fails, an error MUST be raised and SHOULD convey an error type of
-`KEY_GENERATION_ERROR`.
-            </li>
-            <li>
-Export the public key from |keyPair| as a <a
-data-cite="CID#Multikey">Multikey</a> value. Let |publicKey| be the result.
+Generate the initial [=heartbeat key=] and its [=heartbeat hash=]:
+              <ol class="algorithm">
+                <li>
+Generate a new key pair that is expressible as a
+<a data-cite="CID#Multikey">Multikey</a> value, such as a `P-256` key pair.
+Let |heartbeatKeyPair| be the result. If key generation fails, an error MUST
+be raised and SHOULD convey an error type of `KEY_GENERATION_ERROR`.
+                </li>
+                <li>
+Export the public key from |heartbeatKeyPair| as a
+<a data-cite="CID#Multikey">Multikey</a> value. Let |heartbeatPublicKey| be
+the result.
+                </li>
+                <li>
+Form the `did:key` URL for |heartbeatPublicKey| by concatenating the string
+`did:key:` and |heartbeatPublicKey|.`publicKeyMultibase`. Let
+|heartbeatDidKey| be the result.
+                </li>
+                <li>
+Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
+UTF-8 encoded |heartbeatDidKey| string. Encode the result using base58-btc,
+prepending the <a data-cite="CID#Multibase">Multibase</a> (`z`) character.
+Let |heartbeatHash| be the result. This hash represents a commitment to the
+[=heartbeat key=] without exposing the key itself in the [=DID document=].
+                </li>
+              </ol>
             </li>
             <li>
 Create an initial [=DID document=] structure ([=map=] |didDocument|) with the
@@ -643,62 +698,21 @@ Set |didDocument|.`@context` to an array containing the following
 two strings: `https://www.w3.org/ns/did/v1.1` and `https://w3id.org/didcel/v1`.
                 </li>
                 <li>
-Set |didDocument|.`assertionMethod` to an array containing a single
-verification method object with the following properties:
-                  <ol class="algorithm">
-                    <li>
-Set the verification method's `id` value to the concatenation of the
-`#` character and the `publicKeyMultibase` value of the |publicKey|.
-                    </li>
-                    <li>
-Set the verification method's `type` to `Multikey`.
-                    </li>
-                    <li>
-Set the verification method's `publicKeyMultibase` to
-|publicKey|.`publicKeyMultibase`.
-                    </li>
-                  </ol>
+Set |didDocument|.`heartbeatFrequency` to
+|options|.|heartbeatFrequency| if present, otherwise to `P1M`. This value
+specifies the maximum elapsed time allowed between consecutive [=witnessed=]
+events before [=verifiers=] consider the [=DID=] to be deactivated.
                 </li>
                 <li>
-Set |didDocument|.`heartbeatFrequency` to `P10Y` or to a controller-supplied
-ISO 8601 duration string. This value specifies the maximum elapsed time allowed
-between consecutive [=witnessed=] events before [=verifiers=] consider the [=DID=]
-to be deactivated.
+Set |didDocument|.`heartbeat` to an array containing |heartbeatHash|.
                 </li>
                 <li>
-Set |didDocument|.`service` to an array containing a
+If |options|.|service| is present, set |didDocument|.`service` to its value.
+This is typically an array containing a
 <a data-cite="CID#services">service entry</a> where the `type` is
 `CelStorageService` and the `serviceEndpoint` is an array of URLs that the
 controller will use to store the canonical version of the
 [=cryptographic event log=].
-                </li>
-              </ol>
-            </li>
-            <li>
-Generate a recovery key pair and add its hash to |didDocument|:
-              <ol class="algorithm">
-                <li>
-Generate a new key pair based on |keyType|. Let |recoveryKeyPair| be the result.
-                </li>
-                <li>
-Export the public key from |recoveryKeyPair| as a
-<a data-cite="CID#Multikey">Multikey</a> value. Let |recoveryPublicKey| be the result.
-                </li>
-                <li>
-Form the `did:key` URI for |recoveryPublicKey| by concatenating the string
-`did:key:` and |recoveryPublicKey|.`publicKeyMultibase`. Let |recoveryDidKey|
-be the result.
-                </li>
-                <li>
-Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the
-UTF-8 encoded |recoveryDidKey| string. Encode the result using base58-btc,
-prepending the <a data-cite="CID#Multibase">Multibase</a> (`z`) character.
-Let |recoveryHash| be the result.
-                </li>
-                <li>
-Set |didDocument|.`recovery` to an array containing |recoveryHash|. This
-hash represents a commitment to the recovery key without exposing the key
-itself in the [=DID document=].
                 </li>
               </ol>
             </li>
@@ -723,8 +737,8 @@ Set |didDocument|.`id` to the concatenated value of `did:cel:` and
 the |encodedHash|.
                 </li>
                 <li>
-Set the `controller` property of the verification method in
-|didDocument|.`assertionMethod` to |didDocument|.`id`.
+For each verification method in |didDocument|, if any, set its `controller`
+property to |didDocument|.`id`.
                 </li>
               </ol>
             </li>
@@ -748,10 +762,13 @@ A `data` property containing the |didDocument|.
               </ol>
             </li>
             <li>
-Generate a cryptographic proof for |event| using a cryptosuite
-that is compatible with the generated |keyPair|, such as
+Generate a cryptographic proof for |event| using |heartbeatKeyPair| and a
+cryptosuite that is compatible with it, such as
 <a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>. Set the
-`proofPurpose` to `assertionMethod`. Add the `proof` to the |event|.
+`proofPurpose` to `assertionMethod` and the `verificationMethod` to
+|heartbeatDidKey|, optionally followed by a fragment identifier. Add the
+`proof` to the |event|. Note that proof creation might add a Data Integrity
+`@context` value to the |event|.
             </li>
             <li>
 Create the initial [=cryptographic event log=]:
@@ -769,12 +786,10 @@ Return a [=map=] containing:
 |didDocument|: the completed [=DID document=] with the computed identifier
                 </li>
                 <li>
-|keyPair|: the generated key pair (including secret key material)
-                </li>
-                <li>
-|recoveryKeyPair|: the recovery key pair (including secret key material).
-The controller MUST store this securely offline. Its `did:key` URI may be
-used as the `verificationMethod` in a recovery operation.
+|heartbeatKeyPair|: the [=heartbeat key=] (including secret key material), or
+the secret material from which the [=heartbeat keys=] are derived. The
+controller MUST store this securely; it is required to sign the next event
+appended to the [=cryptographic event log=].
                 </li>
                 <li>
 |cryptographicEventLog|: the initial event log with the create event
@@ -899,16 +914,17 @@ The read operation resolves a `did:cel` [=DID=] by retrieving and fully
 validating its [=cryptographic event log=], then returning the most recent
 [=DID document=] state. This is the primary mechanism through which
 [=verifiers=] interact with the `did:cel` method. The operation confirms
-that the log's hash chain is intact, that every event was signed by an
-authorized key, and that each event was independently attested by one
-or more trusted [=witnesses=] within acceptable time bounds.
+that the log's hash chain is intact, that every event was signed by a
+[=heartbeat key=] committed to in the [=DID document=], and that each event
+was independently attested by one or more recognized [=witnesses=] within
+acceptable time bounds.
         </p>
 
         <p>
 Trust in [=witness=] attestations is governed by a set of
-|trustedWitnesses| supplied by the caller. Each entry identifies a
+|recognizedWitnesses| supplied by the caller. Each entry identifies a
 [=witness=] by DID and specifies the time range during which that
-[=witness=] is considered trustworthy, enabling [=verifiers=] to enforce
+[=witness=] is recognized, enabling [=verifiers=] to enforce
 their own [=witness=] policies without requiring changes to the
 [=cryptographic event log=] itself. This separation allows [=witness=]
 trust to evolve independently of the DID history it attests to.
@@ -959,27 +975,27 @@ use UTF-8 encoding.
 |cel|: a serialized [=cryptographic event log=].
             </li>
             <li>
-|trustedWitnesses|: a mandatory array of [=maps=], each containing:
+|recognizedWitnesses|: a mandatory array of [=maps=], each containing:
               <ul>
                 <li>
-`id`: a DID URL identifying the trusted [=witness=].
+`id`: a DID URL identifying the recognized [=witness=].
                 </li>
                 <li>
 `validFrom`: an XML datetime expressing when this [=witness=]
-became trusted.
+became recognized.
                 </li>
                 <li>
 `validUntil`: an XML datetime expressing when this [=witness=] is
-no longer trusted.
+no longer recognized.
                 </li>
               </ul>
-Only [=witness=] proofs whose `verificationMethod` DID matches a trusted
+Only [=witness=] proofs whose `verificationMethod` DID matches a recognized
 witness entry whose `validFrom`/`validUntil` range covers the proof's
 `created` timestamp are processed.
             </li>
             <li>
 |versionTime|: an optional XML datetime. When provided, only log entries
-whose earliest qualifying trusted witness timestamp is at or before
+whose earliest qualifying recognized witness timestamp is at or before
 |versionTime| are processed, allowing retrieval of the [=DID document=]
 state at a specific point in time.
             </li>
@@ -1034,16 +1050,21 @@ For each |logEntry| at index |i| in |log|, perform the following steps:
 Let |event| be |logEntry|.`event`. Let |opProof| be |event|.`proof`.
                 </li>
                 <li>
-Let |allWitnessProofs| be |logEntry|.`proof` if present, otherwise an empty
-array. Let |trustedWitnessProofs| be the subset of |allWitnessProofs| where
-the proof's `verificationMethod` DID matches a trusted witness entry in
-|trustedWitnesses| whose `validFrom` is at or before and whose `validUntil` is
-at or after the proof's `created` timestamp.
+If a previous log entry's `operation`.`type` was `deactivate`, append an
+error to |errors| — deactivation is terminal and no further events are
+permitted after a `deactivate` event.
                 </li>
                 <li>
-If |versionTime| is provided and |trustedWitnessProofs| is non-empty, let
+Let |allWitnessProofs| be |logEntry|.`proof` if present, otherwise an empty
+array. Let |recognizedWitnessProofs| be the subset of |allWitnessProofs| where
+the proof's `verificationMethod` DID matches a recognized witness entry in
+|recognizedWitnesses| whose `validFrom` is at or before and whose `validUntil`
+is at or after the proof's `created` timestamp.
+                </li>
+                <li>
+If |versionTime| is provided and |recognizedWitnessProofs| is non-empty, let
 |earliestWitnessTime| be the minimum parsed `created` timestamp among all
-entries in |trustedWitnessProofs|. If |earliestWitnessTime| is after
+entries in |recognizedWitnessProofs|. If |earliestWitnessTime| is after
 |versionTime|, skip this entry and all subsequent entries and proceed to step 5.
                 </li>
                 <li>
@@ -1063,50 +1084,58 @@ If |computed| does not equal |event|.`previousEventHash`, append an error to
                   </ol>
                 </li>
                 <li>
-Let |prevDidDocument| be |currentDidDocument|. If |event|.`operation`.`data`
-is present, set |currentDidDocument| to |event|.`operation`.`data`.
+Let |prevDidDocument| be |currentDidDocument|. If |event|.`operation`.`type`
+is `heartbeat`, set |currentDidDocument| to a copy of |currentDidDocument|
+with its `heartbeat` property replaced by
+|event|.`operation`.`data`.`heartbeat`. Otherwise, if
+|event|.`operation`.`data` is present, set |currentDidDocument| to
+|event|.`operation`.`data`.
                 </li>
                 <li>
 If |opProof| is present, verify the operation proof:
                   <ol class="algorithm">
                     <li>
-Let |vmRef| be |opProof|.`verificationMethod`. Attempt to locate a matching key
-in |currentDidDocument|.`assertionMethod` by comparing |vmRef| against each
-key's full `id` or fragment suffix. Let |assertionKey| be the result, or null
-if not found.
+Let |vmRef| be |opProof|.`verificationMethod`. The |vmRef| value MUST be a
+`did:key` URL, optionally followed by a `#` fragment; if it is not, append an
+error to |errors|. Let |didKeyUrl| be the portion of |vmRef| before any `#`
+fragment.
                     </li>
                     <li>
-If |assertionKey| is null and |vmRef| begins with `did:key:`, compute the
-SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the UTF-8 encoded
-`did:key` URL (the portion before any `#` fragment). If that hash appears in
-|prevDidDocument|.`recovery`, treat this as a recovery key operation and
-extract the public key material directly from the `did:key` URL. Otherwise
-append an error to |errors|.
+Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the UTF-8
+encoded |didKeyUrl| and encode it as a base58-btc
+<a data-cite="CID#Multibase">Multibase</a> string. Let |usedHash| be the
+result.
                     </li>
                     <li>
-Invoke the
+Let |committedHeartbeat| be |prevDidDocument|.`heartbeat` if
+|prevDidDocument| is not null, otherwise |currentDidDocument|.`heartbeat`
+(the create event is signed by the [=heartbeat key=] committed to in its own
+[=DID document=]). If |usedHash| does not appear in |committedHeartbeat|,
+append an error to |errors| — every event MUST be signed by a
+[=heartbeat key=] whose [=heartbeat hash=] was committed to in the
+[=DID document=] in effect when the event was created.
+                    </li>
+                    <li>
+Extract the public key material from |didKeyUrl| and invoke the
 <a data-cite="VC-DATA-INTEGRITY#verify-proof">Verify Proof</a> algorithm
-from [[[VC-DATA-INTEGRITY]]] on |event| using |opProof| and the located
-verification key. If verification fails, append an error to |errors|.
+from [[[VC-DATA-INTEGRITY]]] on |event| using |opProof| and that public key.
+If verification fails, append an error to |errors|.
                     </li>
                   </ol>
                 </li>
                 <li>
-If the operation was signed by a recovery key (|assertionKey| was null and a
-recovery key was matched), verify the recovery hash rotation:
+If |i| is greater than 0 and |event|.`operation`.`type` is not `deactivate`,
+verify the [=heartbeat hash=] rotation:
                   <ol class="algorithm">
                     <li>
-Compute the SHA3-256 hash of the recovery `did:key` URL as described above.
-Let |usedHash| be the result.
+If |currentDidDocument|.`heartbeat` still contains |usedHash|, append an error
+to |errors| — the [=heartbeat hash=] of the [=heartbeat key=] that signed the
+event MUST be removed from the `heartbeat` array.
                     </li>
                     <li>
-If |currentDidDocument|.`recovery` still contains |usedHash|, append an error
-to |errors| — the used recovery hash MUST be removed from `recovery`.
-                    </li>
-                    <li>
-If |currentDidDocument|.`recovery` has fewer entries than
-|prevDidDocument|.`recovery`, append an error to |errors| — a new recovery
-hash MUST replace the consumed one.
+If |currentDidDocument|.`heartbeat` has fewer entries than
+|prevDidDocument|.`heartbeat`, append an error to |errors| — a new
+[=heartbeat hash=] MUST replace the consumed one.
                     </li>
                   </ol>
                 </li>
@@ -1115,13 +1144,13 @@ Let |opTime| be the parsed timestamp of |opProof|.`created` if present,
 otherwise null. Let |entryWitnessTime| be null.
                 </li>
                 <li>
-For each |witnessProof| in |trustedWitnessProofs|, perform the following:
+For each |witnessProof| in |recognizedWitnessProofs|, perform the following:
                   <ol class="algorithm">
                     <li>
 Invoke the
 <a data-cite="VC-DATA-INTEGRITY#verify-proof">Verify Proof</a> algorithm
 from [[[VC-DATA-INTEGRITY]]] on |logEntry| using |witnessProof| and the public
-key extracted from the `did:key` URL in |witnessProof|.`verificationMethod`.
+key obtained by dereferencing |witnessProof|.`verificationMethod`.
 If verification fails, append an error to |errors|.
                     </li>
                     <li>
@@ -1134,8 +1163,8 @@ If |opTime| is not null, compute the absolute difference in minutes between
 exceeds 5 minutes, append an error to |errors|.
                     </li>
                     <li>
-Update |entryWitnessTime| to be the maximum trusted witness timestamp seen for
-this entry so far.
+Update |entryWitnessTime| to be the maximum recognized witness timestamp seen
+for this entry so far.
                     </li>
                   </ol>
                 </li>
@@ -1145,7 +1174,7 @@ Check the [=heartbeat frequency=]: if |i| is greater than 0, and both
                   <ol class="algorithm">
                     <li>
 Let |heartbeatFrequency| be |prevDidDocument|.`heartbeatFrequency` if present,
-otherwise `P10Y`.
+otherwise `P1M`.
                     </li>
                     <li>
 If the elapsed time between |prevEntryWitnessTime| and |entryWitnessTime|
@@ -1181,10 +1210,15 @@ event log=]. When changes are made to a [=DID document=]—such as adding or rem
 verification methods, updating service endpoints, or setting expiration
 dates—the update operation ensures these modifications are cryptographically
 signed and recorded in the event log. The operation proceeds in two phases:
-first, the modified [=DID document=] receives a fresh [=data integrity proof=]
-signed by an authorized assertion method key; second, a new update event is
-appended to the [=cryptographic event log=] with a hash link to the previous event,
-creating an immutable chain of document history.
+first, the update event containing the modified [=DID document=] receives a
+[=data integrity proof=] signed by the current [=heartbeat key=], expressed as
+a `did:key`; second, the new update event is appended to the [=cryptographic
+event log=] with a hash link to the previous event, creating an immutable
+chain of document history. Because signing an event consumes the
+[=heartbeat key=] that signed it, every update MUST also rotate the
+`heartbeat` array in the [=DID document=]: the [=heartbeat hash=] of the
+signing key is removed and at least one new [=heartbeat hash=], committing to
+the next [=heartbeat key=], is added.
         </p>
 
         <p>
@@ -1193,10 +1227,10 @@ properties. Each update event includes a `previousEventHash` property containing
 SHA3-256 hash of the prior event. This cryptographic chain ensures that any
 tampering with historical events would be immediately detectable, as it would
 break the hash links throughout the chain. The combination of cryptographic
-proofs on the [=DID document=] and [=hashlinked=] events in the log provides both
-authenticity guarantees (the document was signed by an authorized key) and
-integrity guarantees (the complete history of changes is verifiable and
-tamper-evident). After performing an update, implementations typically invoke
+proofs on the events and [=hashlinked=] events in the log provides both
+authenticity guarantees (the event was signed by a [=heartbeat key=] committed
+to in the [=DID document=]) and integrity guarantees (the complete history of
+changes is verifiable and tamper-evident). After performing an update, implementations typically invoke
 the [=witness=] operation to obtain independent temporal attestations of the
 modification.
         </p>
@@ -1216,11 +1250,11 @@ is shown below:
           <p>
 The following algorithm specifies how to update an existing `did:cel`
 [=DID document=] and record the change in the [=cryptographic event log=]. The
-algorithm takes a [=map=] |didDocument| (the modified [=DID document=]), a [=map=]
-|assertionMethod| (the key pair to use for signing), and a [=map=] |cel| (the
-existing [=cryptographic event log=]) as input. Output is the updated |cel| with
-the new event appended, or an error. Whenever this algorithm encodes strings,
-it MUST use UTF-8 encoding.
+algorithm takes a [=map=] |didDocument| (the modified [=DID document=]), a
+[=map=] |heartbeatKey| (the current [=heartbeat key=] pair to use for
+signing), and a [=map=] |cel| (the existing [=cryptographic event log=]) as
+input. Output is the updated |cel| with the new event appended, or an error.
+Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
 
           <p class="issue" title="How much forking protection is enough?">
@@ -1263,6 +1297,25 @@ Let |previousEventHash| be the result.
               </ol>
             </li>
             <li>
+Verify that the modified |didDocument| rotates the [=heartbeat key=] being
+consumed:
+              <ol class="algorithm">
+                <li>
+Compute the SHA3-256 <a data-cite="CID#Multihash">Multihash</a> of the UTF-8
+encoded `did:key` URL of |heartbeatKey| and encode it as a base58-btc
+<a data-cite="CID#Multibase">Multibase</a> string. Let |usedHash| be the
+result.
+                </li>
+                <li>
+The |didDocument|.`heartbeat` array MUST NOT contain |usedHash| and MUST
+contain at least as many entries as the `heartbeat` array of the current
+[=DID document=]; at least one new [=heartbeat hash=], committing to the next
+[=heartbeat key=], replaces the consumed one. If either condition is not met,
+an error MUST be raised.
+                </li>
+              </ol>
+            </li>
+            <li>
 Create the update event object ([=map=] |updateEvent|):
               <ol class="algorithm">
                 <li>
@@ -1283,9 +1336,10 @@ Set |updateEvent|.`operation`.`data` to the modified |didDocument|.
             </li>
             <li>
 Generate a cryptographic proof for |updateEvent| using a cryptosuite compatible
-with |assertionMethod|, such as
+with |heartbeatKey|, such as
 <a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>. Set the
-`proofPurpose` to `assertionMethod`. Set |updateEvent|.`proof` to the result.
+`proofPurpose` to `assertionMethod` and the `verificationMethod` to the
+`did:key` URL of |heartbeatKey|. Set |updateEvent|.`proof` to the result.
             </li>
             <li>
 Create a new log entry ([=map=] |logEntry|) with an `event` property set to
@@ -1317,7 +1371,7 @@ independent attestations of the update event.
         <p>
 The heartbeat operation prevents an attacker, such as a compromised
 [=cryptographic event log=] storage service, from truncating a cryptographic
-log. If the attacker attacker attempts to truncate the cryptographic log beyond
+log. If the attacker attempts to truncate the cryptographic log beyond
 the heartbeat window for a specific [=DID=], it will be interpreted as a
 deactivation by a [=verifier=]. [=DID documents=] created with the `did:cel`
 method can include a `heartbeatFrequency` property that specifies how frequently
@@ -1330,14 +1384,21 @@ controller=] remains in control and wishes to keep the [=DID=] active.
         </p>
 
         <p>
-Unlike update operations that modify the [=DID document=], heartbeat events
-contain only an operation structure with a `type` of `heartbeat` and no
-associated data payload. This minimal structure reduces the computational cost
-and storage requirements for maintaining [=DID=] liveness while still providing
-cryptographic proof that the [=DID controller=] possesses the private keys
-necessary to sign events. The heartbeat event is signed using an assertion
-method key and [=hashlinked=] to the previous event in the log, maintaining the
-integrity of the event chain. After creating a heartbeat event, implementations
+Unlike update operations that republish the entire [=DID document=], heartbeat
+events contain an operation structure with a `type` of `heartbeat` and a
+`data` payload containing only a new `heartbeat` array. This minimal structure
+rotates the [=heartbeat key=] — the [=heartbeat hash=] of the key that signed
+the event is replaced by a [=heartbeat hash=] committing to the next
+[=heartbeat key=] — without modifying any other part of the [=DID document=],
+reducing the computational cost and storage requirements for maintaining
+[=DID=] liveness while still providing cryptographic proof that the
+[=DID controller=] possesses the private keys necessary to sign events. The
+heartbeat event is signed using the current [=heartbeat key=], expressed as a
+`did:key`, and [=hashlinked=] to the previous event in the log, maintaining
+the integrity of the event chain. When [=verifiers=] process a heartbeat
+event, only the `heartbeat` property of the effective [=DID document=] is
+replaced; all other properties remain as established by the most recent
+`create` or `update` event. After creating a heartbeat event, implementations
 typically invoke the [=witness=] operation to obtain independent temporal
 attestations, which provide evidence that the heartbeat occurred at a specific
 point in time and can be used to verify compliance with the `heartbeatFrequency`
@@ -1354,11 +1415,14 @@ policy.
           <p>
 The following algorithm specifies how to create a heartbeat event and append it
 to the [=cryptographic event log=]. The heartbeat operation demonstrates
-continued control of the [=DID=] without modifying the [=DID document=]
-contents. The algorithm takes a [=map=] |assertionMethod| (the key pair to use
-for signing) and a [=map=] |cel| (the existing [=cryptographic event log=]) as
-input. Output is the updated |cel| with the heartbeat event appended, or an
-error. Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
+continued control of the [=DID=] and rotates the [=heartbeat key=] without
+modifying any other [=DID document=] contents. The algorithm takes a [=map=]
+|heartbeatKey| (the current [=heartbeat key=] pair to use for signing), a
+string |nextHeartbeatHash| (the [=heartbeat hash=] committing to the next
+[=heartbeat key=]), and a [=map=] |cel| (the existing [=cryptographic event
+log=]) as input. Output is the updated |cel| with the heartbeat event
+appended, or an error. Whenever this algorithm encodes strings, it MUST use
+UTF-8 encoding.
           </p>
 
           <ol class="algorithm">
@@ -1400,6 +1464,12 @@ Set |heartbeatEvent|.`operation` to a new [=map=].
                 <li>
 Set |heartbeatEvent|.`operation`.`type` to the string `heartbeat`.
                 </li>
+                <li>
+Set |heartbeatEvent|.`operation`.`data` to a [=map=] with a single `heartbeat`
+property whose value is an array containing |nextHeartbeatHash|. The array
+MUST NOT contain the [=heartbeat hash=] of |heartbeatKey|, which is consumed
+by signing this event.
+                </li>
               </ol>
             </li>
             <li>
@@ -1407,9 +1477,10 @@ Generate a cryptographic proof for |heartbeatEvent|:
               <ol class="algorithm">
                 <li>
 Create a [=data integrity proof=] using the cryptosuite compatible with
-|assertionMethod| (such as
-<a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>). Let |proof| be the
-result. The `proofPurpose` MUST be set to `assertionMethod`.
+|heartbeatKey| (such as
+<a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>). Let |proof| be
+the result. The `proofPurpose` MUST be set to `assertionMethod` and the
+`verificationMethod` MUST be set to the `did:key` URL of |heartbeatKey|.
                 </li>
                 <li>
 Set |heartbeatEvent|.`proof` to |proof|.
@@ -1430,8 +1501,9 @@ Append |logEntry| to |cel|.`log`.
             </li>
             <li>
 Return the updated |cel|. The [=cryptographic event log=] now contains a new
-[=hashlinked=] heartbeat event that demonstrates continued control without modifying
-the [=DID document=].
+[=hashlinked=] heartbeat event that demonstrates continued control and rotates
+the [=heartbeat key=] without modifying any other part of the
+[=DID document=].
             </li>
           </ol>
 
@@ -1466,11 +1538,12 @@ confusion or misuse.
         </p>
 
         <p>
-Similar to heartbeat operations, deactivation events contain only an operation
+Deactivation events contain only an operation
 structure with a `type` of `deactivate` and no associated data payload. The
-deactivation event is signed using an assertion method key from the current
-[=DID document=] and [=hashlinked=] to the previous event in the log, proving
-that the [=DID controller=] authorized the deactivation. After creating a
+deactivation event is signed using the current [=heartbeat key=], expressed as
+a `did:key`, and [=hashlinked=] to the previous event in the log, proving
+that the [=DID controller=] authorized the deactivation. Because deactivation
+is terminal, no rotation of the `heartbeat` array is required. After creating a
 deactivation event, implementations invoke the [=witness=] operation to obtain
 independent attestations of the deactivation, which provides temporal evidence
 and distributed validation that the deactivation occurred. [=Verifiers=] that
@@ -1493,10 +1566,10 @@ assertion, or any other cryptographic operations.
 The following algorithm specifies how to create a deactivation event and append
 it to the [=cryptographic event log=]. The deactivation operation permanently
 disables the [=DID=], preventing any further operations. The algorithm takes a
-[=map=] |assertionMethod| (the key pair to use for signing) and a [=map=] |cel|
-(the existing [=cryptographic event log=]) as input. Output is the updated |cel|
-with the deactivation event appended, or an error. Whenever this algorithm
-encodes strings, it MUST use UTF-8 encoding.
+[=map=] |heartbeatKey| (the current [=heartbeat key=] pair to use for signing)
+and a [=map=] |cel| (the existing [=cryptographic event log=]) as input.
+Output is the updated |cel| with the deactivation event appended, or an error.
+Whenever this algorithm encodes strings, it MUST use UTF-8 encoding.
           </p>
 
           <ol class="algorithm">
@@ -1545,9 +1618,10 @@ Generate a cryptographic proof for |deactivateEvent|:
               <ol class="algorithm">
                 <li>
 Create a [=data integrity proof=] using the cryptosuite compatible with
-|assertionMethod| (such as
+|heartbeatKey| (such as
 <a data-cite="VC-DI-ECDSA#ecdsa-jcs-2019">ecdsa-jcs-2019</a>). Let |proof| be
-the result. The `proofPurpose` MUST be set to `assertionMethod`.
+the result. The `proofPurpose` MUST be set to `assertionMethod` and the
+`verificationMethod` MUST be set to the `did:key` URL of |heartbeatKey|.
                 </li>
                 <li>
 Set |deactivateEvent|.`proof` to |proof|.
@@ -1580,9 +1654,9 @@ deactivation event is added to the [=cryptographic event log=] and
 a [=cryptographic event log=] containing a deactivation event reject any
 operations after the [=DID=] was deactivated. Implementations that allow
 deactivation might require additional authentication beyond the standard
-assertion method signature, such as multi-signature authorization or
-confirmation from recovery keys, to prevent accidental or malicious deactivation
-of active [=DIDs=]. The complete event log remains accessible for historical
+[=heartbeat key=] signature, such as multi-signature authorization or
+multi-party controls on the [=heartbeat key=] material, to prevent accidental
+or malicious deactivation of active [=DIDs=]. The complete event log remains accessible for historical
 auditing, but the [=DID=] itself is no longer valid for any cryptographic
 operation beyond the deactivate timestamp.
           </p>
@@ -1856,7 +1930,10 @@ and potentially the systems or software used to create the DID. As
 cryptographic algorithms age and new algorithms are adopted, the continued
 use of older algorithms or the early adoption of newer ones can serve as
 identifying characteristics. Furthermore, the cryptographic choices reveal
-the [=DID controller=]'s security posture and risk tolerance.
+the [=DID controller=]'s security posture and risk tolerance. The
+[=heartbeat hashes=] recorded in the log are similarly long-lived key
+commitments; each one permanently documents that the controller possessed
+a particular key at a particular time.
         </p>
 
         <p>
@@ -1940,7 +2017,7 @@ To mitigate [=witness=] collusion risks, implementers are encouraged to select
 [=witnesses=] operated by independent entities with diverse operational and
 jurisdictional characteristics. Systems that verify [=DIDs=] can require
 attestations from a minimum number of [=witnesses=] before accepting an event as
-valid, and can maintain lists of trusted [=witnesses=] with known good security
+valid, and can maintain lists of recognized [=witnesses=] with known good security
 practices. [=DID controllers=] are encouraged to select geographically and
 organizationally distributed [=witnesses=] to minimize the risk of coordinated
 attacks. Monitoring [=witness=] behavior over time can help detect anomalies
@@ -1968,15 +2045,27 @@ documents=] if proper expiration handling is not implemented.
         </p>
 
         <p>
-Implementers are encouraged to implement key expiration mechanisms using the
-`expires` property on [=verification methods=], which limits the time window
-during which a compromised key can be abused. When rotating keys, [=DID
+The [=heartbeat key=] mechanism addresses several of these challenges by
+construction. Every event appended to the [=cryptographic event log=] consumes
+the [=heartbeat key=] that signed it, forcing a rotation with each operation:
+the consumed [=heartbeat hash=] is removed from the `heartbeat` array and a
+new hash, committing to the next [=heartbeat key=], is added. Because only a
+hash of each [=heartbeat key=] is published before the key is used, an
+attacker cannot learn the signing key in advance of its single use.
+[=DID controllers=] are advised to keep [=heartbeat key=] material — or the
+secret from which [=heartbeat keys=] are derived — offline or in hardware-backed
+storage, since its compromise allows an attacker to append events to the log.
+        </p>
+
+        <p>
+For the [=verification methods=] published in the [=DID document=],
+implementers are encouraged to implement key expiration mechanisms using the
+`expires` property, which limits the time window
+during which a compromised key can be abused. When rotating such keys, [=DID
 controllers=] are advised to follow a process of first adding new keys to the
 [=DID document=], then expiring old keys, and only after confirming the new keys
 are functional should the old keys be removed. This overlapping approach ensures
-continuity of operations during rotation. For critical keys, maintaining offline
-backup keys with authority to perform emergency rotations can provide recovery
-paths when primary keys are compromised. Conforming systems that verify [=data
+continuity of operations during rotation. Conforming systems that verify [=data
 integrity proofs=] check [=verification method=] expiration times and reject
 proofs created after a [=verification method=] has expired, limiting the damage
 from compromised keys. Regular key rotation schedules, even without evidence of
@@ -2254,9 +2343,9 @@ availability.
         <p>
 Each operation in the [=cryptographic event log=] contains a [=data integrity
 proof=] that cryptographically binds the operation to the [=DID document=]
-through a signature created with a [=verification method=] contained in the
-document. [=Witnesses=] proofs are also attached to each event in the
-[=cryptographic event log=]. Proper validation of these proofs is critical for
+through a signature created with a [=heartbeat key=] whose [=heartbeat hash=]
+was committed to in the document. [=Witnesses=] proofs are also attached to
+each event in the [=cryptographic event log=]. Proper validation of these proofs is critical for
 security—if implementations skip proof verification or perform it incorrectly,
 they might accept fraudulent [=DID documents=] that were not actually created by
 the legitimate [=DID controller=]. The process of [=data integrity proof=]
@@ -2355,9 +2444,10 @@ operational and governance models can provide more robust validation than
 
         <p>
 The security of [=DID document=] modifications relies on the [=DID
-controller=] maintaining exclusive control over the private keys corresponding
-to [=verification methods=] in the [=DID document=]. If an attacker gains
-access to these private keys through theft, social engineering, malware, or
+controller=] maintaining exclusive control over the [=heartbeat key=]
+material — or the secret from which [=heartbeat keys=] are derived — that
+authorizes events in the [=cryptographic event log=]. If an attacker gains
+access to this key material through theft, social engineering, malware, or
 cryptographic compromise, they can create fraudulent updates to the [=DID
 document=] that appear legitimate because they carry valid [=data integrity
 proofs=]. Such unauthorized modifications might add attacker-controlled
@@ -2375,9 +2465,9 @@ significantly reduce the risk of key theft. Regular security audits,
 monitoring for unexpected [=DID document=] changes, and maintaining offline
 backups of key material can help detect and recover from compromises.
 Implementing the principle of least privilege by using different
-[=verification methods=] for different purposes, with only minimal keys
-having authority to modify the [=DID document=], can limit the impact of key
-compromises. When unauthorized modifications are detected, rapid key rotation
+[=verification methods=] for different purposes — with only the
+[=heartbeat key=] having authority to modify the [=DID document=] — can limit
+the impact of key compromises. When unauthorized modifications are detected, rapid key rotation
 following the guidance in the key rotation section can help regain control
 and prevent further unauthorized changes.
         </p>
