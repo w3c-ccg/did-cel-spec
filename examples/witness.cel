@@ -11,9 +11,9 @@
             "https://www.w3.org/ns/did/v1.1",
             "https://w3id.org/didcel/v1"
           ],
-          "id": "did:cel:zW1qGEYC4LTSRhQww15brUCCLDvHxW4bZoEsGtFMqZVYzQv",
+          "id": "did:cel:zW1nqqavX9ePx3hShUqrZhnNLGSrhprAzsaHEpdmCMQhws7",
           "heartbeat": [
-            "zW1pGraoomg27TgLTBqyFABYQgUzgrTCwhiqXrpYBuFq6sb"
+            "zW1gVmMwTL2BGT1kSRhbpP9pjihNUfEpjTbV2jtMH1a7cwN"
           ],
           "heartbeatFrequency": "P3M",
           "service": [{
@@ -31,39 +31,39 @@
           "https://w3id.org/security/data-integrity/v2"
         ],
         "type": "DataIntegrityProof",
-        "created": "2026-07-03T18:45:28Z",
+        "created": "2026-07-03T20:10:33Z",
         "cryptosuite": "ecdsa-jcs-2019",
         "proofPurpose": "assertionMethod",
-        "proofValue": "zrSJjWYnuQ5xMNeqdqxYY1mAKrvyDMtiXxc213QfU2TBsvCg4g7gCnnTyEVNNs7oLy7jZBj1WuQXbtqcqCnguW8x",
-        "verificationMethod": "did:key:zDnaeUWAUgV7dY2r2jbS1zVsCfan9bmV31Ha1Y8xmegvTBTnA"
+        "proofValue": "z648n2KWRrvsZhM9xwY5SXZ8tk7Nj5PejkACkdoPezpY2R4gwZFDuVFHNYX42NDt71za4BBu3roxBjsnxNUPqCUJa",
+        "verificationMethod": "did:key:zDnaeRTgBgMRMSpcujpmbLDTG641RKqJM7RQzZdSF2pjMtdtv"
       }
     },
     "proof": [{
       "@context": "https://w3id.org/security/data-integrity/v2",
       "type": "DataIntegrityProof",
-      "created": "2026-07-03T18:45:28Z",
+      "created": "2026-07-03T20:10:33Z",
       "cryptosuite": "ecdsa-jcs-2019",
       "proofPurpose": "assertionMethod",
-      "proofValue": "z2LzSiVS52b5g9UhV1yzoFRq8RDmP8RwDGxaos6SQEa1Kw5zNu8Mr7YGRYFP2Dw7buWfTxKueDGnvdqGBZf2vukH5",
-      "verificationMethod": "did:web:red-witness.example#vm-red-1"
+      "proofValue": "z36LvX84tnKrifaSZNpgNugRjpa2s2vNx4utW2uoTq3gNTwfbiRYHkdzuAXpkX93megfRYAUa3eG1yM3L1Mqoao6x",
+      "verificationMethod": "did:key:zDnaexgKWoejkbWirXnT2FXk3d4QnbGqbowq12jia8TEid5Qd#red-witness"
     },
       {
         "@context": "https://w3id.org/security/data-integrity/v2",
         "type": "DataIntegrityProof",
-        "created": "2026-07-03T18:45:28Z",
+        "created": "2026-07-03T20:10:33Z",
         "cryptosuite": "ecdsa-jcs-2019",
         "proofPurpose": "assertionMethod",
-        "proofValue": "z2Nfck9DaXDxc4m3mJMAT3DD5hUk95YiSoMRrHDXVXj4ekMZ7enR2Dz9vkWFeXqu3YzCqyo9f41pmmAJ1asuBEw53",
-        "verificationMethod": "did:web:green-witness.example#vm-green-1"
+        "proofValue": "zoJJVYYLQdESkC2rEqCVfP6dGZ6DGG38nSpf4ma3uzvRAuRUyhBd5MPsENrnB8McrHpB1bZjnbbDkfB5nYwYiG87",
+        "verificationMethod": "did:key:zDnaeaXVQWfcRTXcbdnfZuDSBNgzfubt5ZwbiQAqd68JLc5ph#green-witness"
       },
       {
         "@context": "https://w3id.org/security/data-integrity/v2",
         "type": "DataIntegrityProof",
-        "created": "2026-07-03T18:45:28Z",
+        "created": "2026-07-03T20:10:33Z",
         "cryptosuite": "ecdsa-jcs-2019",
         "proofPurpose": "assertionMethod",
-        "proofValue": "z2wuQMForEAGvVhS11GDAkwqVrREVAvWa4T7jRHxL8PmJcstQizVeyBYibShwEuhaTiXCSpjwZoA684Tiqhqb9KGk",
-        "verificationMethod": "did:web:blue-witness.example#vm-blue-1"
+        "proofValue": "z5mS6c3bnm1AZLVLSZoPSPMRivqBtvCNxdL1MXwFZ8gHhc5eiHYzUwhhSazAQpWit3M6aM4E1eV9ZTi6KxWZEAAHd",
+        "verificationMethod": "did:key:zDnaexKAjuTmGvuNikAsY7NWg2Vy8HEPtJxTATiUXth8tz7De#blue-witness"
       }
     ]
   }]

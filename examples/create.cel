@@ -11,9 +11,9 @@
             "https://www.w3.org/ns/did/v1.1",
             "https://w3id.org/didcel/v1"
           ],
-          "id": "did:cel:zW1qGEYC4LTSRhQww15brUCCLDvHxW4bZoEsGtFMqZVYzQv",
+          "id": "did:cel:zW1nqqavX9ePx3hShUqrZhnNLGSrhprAzsaHEpdmCMQhws7",
           "heartbeat": [
-            "zW1pGraoomg27TgLTBqyFABYQgUzgrTCwhiqXrpYBuFq6sb"
+            "zW1gVmMwTL2BGT1kSRhbpP9pjihNUfEpjTbV2jtMH1a7cwN"
           ],
           "heartbeatFrequency": "P3M",
           "service": [{
@@ -31,11 +31,11 @@
           "https://w3id.org/security/data-integrity/v2"
         ],
         "type": "DataIntegrityProof",
-        "created": "2026-07-03T18:45:28Z",
+        "created": "2026-07-03T20:10:33Z",
         "cryptosuite": "ecdsa-jcs-2019",
         "proofPurpose": "assertionMethod",
-        "proofValue": "zrSJjWYnuQ5xMNeqdqxYY1mAKrvyDMtiXxc213QfU2TBsvCg4g7gCnnTyEVNNs7oLy7jZBj1WuQXbtqcqCnguW8x",
-        "verificationMethod": "did:key:zDnaeUWAUgV7dY2r2jbS1zVsCfan9bmV31Ha1Y8xmegvTBTnA"
+        "proofValue": "z648n2KWRrvsZhM9xwY5SXZ8tk7Nj5PejkACkdoPezpY2R4gwZFDuVFHNYX42NDt71za4BBu3roxBjsnxNUPqCUJa",
+        "verificationMethod": "did:key:zDnaeRTgBgMRMSpcujpmbLDTG641RKqJM7RQzZdSF2pjMtdtv"
       }
     }
   }]

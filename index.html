@@ -480,7 +480,7 @@ A simple example of a valid `did:cel` DID is:
       </p>
 
       <pre class="example nohighlight" title="A valid did:cel identifier">
-did:cel:zW1qGEYC4LTSRhQww15brUCCLDvHxW4bZoEsGtFMqZVYzQv
+did:cel:zW1nqqavX9ePx3hShUqrZhnNLGSrhprAzsaHEpdmCMQhws7
       </pre>
 
     </section>
@@ -662,7 +662,7 @@ Host: red-witness.example
 Content-Type: application/json
 
 {
-  "digestMultibase": "zQmUVC4h7xBquz6h25UDyZbQUnt4aVYexXXwyEeh34VGHSA"
+  "digestMultibase": "zQmNkifPhBQBTBNidkSNstW7YkAFr4Lx8dRuaR5mRBCorc8"
 }
           </pre>
         </section>
@@ -704,9 +704,9 @@ A string that MUST be present with the value `assertionMethod`.
             <dt>`verificationMethod`</dt>
             <dd>
 A string that MUST be present and MUST be a URL that can be dereferenced to
-obtain the public key of the [=witness=], such as a `did:key` or `did:web`
-URL. The DID portion of this value is what [=verifiers=] match against
-their recognized [=witness=] lists.
+obtain the public key of the [=witness=], such as a `did:key` URL. The DID
+portion of this value is what [=verifiers=] match against their recognized
+[=witness=] lists.
             </dd>
             <dt>`proofValue`</dt>
             <dd>
@@ -734,11 +734,11 @@ Content-Type: application/json
   "proof": {
     "@context": "https://w3id.org/security/data-integrity/v2",
     "type": "DataIntegrityProof",
-    "created": "2026-07-03T18:45:28Z",
+    "created": "2026-07-03T20:10:33Z",
     "cryptosuite": "ecdsa-jcs-2019",
     "proofPurpose": "assertionMethod",
-    "proofValue": "z2LzSiVS52b5g9UhV1yzoFRq8RDmP8RwDGxaos6SQEa1Kw5zNu8Mr7YGRYFP2Dw7buWfTxKueDGnvdqGBZf2vukH5",
-    "verificationMethod": "did:web:red-witness.example#vm-red-1"
+    "proofValue": "z36LvX84tnKrifaSZNpgNugRjpa2s2vNx4utW2uoTq3gNTwfbiRYHkdzuAXpkX93megfRYAUa3eG1yM3L1Mqoao6x",
+    "verificationMethod": "did:key:zDnaexgKWoejkbWirXnT2FXk3d4QnbGqbowq12jia8TEid5Qd#red-witness"
   }
 }
           </pre>
