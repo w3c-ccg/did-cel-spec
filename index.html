@@ -879,6 +879,156 @@ described in <a href="#document-witnessing-algorithm"></a>.
 
     </section>
 
+    <section class="informative">
+      <h2>Cryptographic Event Log (CEL)</h2>
+
+      <p>
+The following section describes the utilization of the [=cryptographic event log=]
+within the `did:cel` specification. This specification defines a [[[CEL]]] feature
+subset optimized for managing [=DID Document=] state transitions.
+      </p>
+
+      <section class="informative">
+        <h3>Data Model</h3>
+
+        <p>
+A [=cryptographic event log=] (CEL) consists of an ordered sequence of [=witnessed=] events
+representing state transitions of the [=DID document=] associated with a `did:cel`
+identifier. The log captures the full history of changes to the identifier state.
+The structure of the log is shown below:
+        </p>
+
+        <figure>
+          <img style="margin: auto; display: block; height: 500px;"
+               src="diagrams/did-cel-log-structure.svg" alt="diagram showing
+               cryptographic event log structure">
+          <figcaption style="text-align: center;">
+            The structure of the [=cryptographic event log=].
+          </figcaption>
+        </figure>
+
+        <p>
+The log MUST contain one or more [=witnessed=] [=event entries=].
+The first event entry MUST be a `create` event that defines the initial
+[=DID document=] state associated with a `did:cel` identifier. This initial
+state serves as the basis from which a [=genesis DID document=] is derived,
+enabling verification of the `did:cel` identifier's inception. Subsequent
+[=event entries=] allow `update` operations on the initial [=DID document=],
+a `heartbeat` event that ensures the temporal liveness of the log, and a `deactivate`
+operation.
+        </p>
+
+        <p>
+Each [=event entry=] MUST have its temporal existence verified by a set of [=witnesses=]
+who do not have access to the entry’s content. The minimum [=witness=] threshold is defined
+by application logic. Each entry MUST contain exactly one [=event=] that defines a state
+transition in the identifier's life cycle.
+        </p>
+
+        <p>
+An [=event=] describes an operation within the identifier's life cycle that is authorized
+by the [=DID document=] controller and accompanied by a cryptographic [=proof=]
+asserting the authenticity of the event. The event MUST contain exactly one [=operation=]
+and one or more [=proofs=], each signed using an assertion method defined in the most
+recent [=DID document=] state prior to the event.
+        </p>
+
+        <p>
+The `create` operation MUST be the first [=event entry=] in the log and MUST NOT
+appear again. It defines the initial state.
+        </p>
+
+        <p>
+The `heartbeat` operation does not modify the [=DID document=] state but asserts
+the liveness of the log. The `update` operation mutates the [=DID document=] state.
+Both the `heartbeat` and `update` operations are transitive.
+        </p>
+
+        <p>
+The `deactivate` operation is terminal and permanently deactivates the log.
+        </p>
+
+      </section>
+
+      <section class="informative">
+        <h3>Lifecycle</h3>
+
+        <p>
+The [=cryptographic event log=] lifecycle is a finite state automaton defined
+by two orthogonal properties of authority and liveness. This model describes
+the transitions between active, degraded, and terminal states.
+        </p>
+
+        <p>
+`Controlled` and `Uncontrolled` states represent the authority condition of
+the [=cryptographic event log=] while it is active. `Controlled` indicates
+exclusive authority, while `Uncontrolled` indicates that authority is lost
+or compromised and no longer exclusive.
+        </p>
+
+        <p>
+`Abandoned` and `Deactivated` states represent two distinct termination mechanisms.
+Implicit termination, based on absence of `heartbeat` [=events=], and explicit
+termination, forced by `deactivate` [=event=].
+        </p>
+
+        <figure>
+          <img style="margin: auto; display: block; height: 440px;"
+               src="diagrams/did-cel-log-lifecycle.svg" alt="diagram showing
+               cryptographic event log lifecycle">
+          <figcaption style="text-align: center;">
+            The lifecycle of the [=cryptographic event log=].
+          </figcaption>
+        </figure>
+
+        <dl>
+          <dt>Controlled</dt>
+          <dd>
+The healthy operational state. The controller possesses valid assertion and
+recovery keys, has exclusive authority, and maintains the [=cryptographic event log=]
+through `update` or periodic `heartbeat` [=events=].
+          </dd>
+        </dl>
+
+        <dl>
+          <dt>Uncontrolled</dt>
+          <dd>
+A degraded state representing compromised or lost authority. If keys are
+compromised, an unauthorized actor may gain the ability to append to or
+modify the log, resulting in dual control or a total loss of exclusive write
+access. During compromise, the [=cryptographic event log=] remains active
+as long as either the legitimate controller or an attacker provides valid `heartbeat`
+[=event=]. This state is non-terminal. However, the absence of a `heartbeat`
+[=event=] transitions the [=cryptographic event log=] to the `Abandoned` state.
+If a recovery key is compromised, an attacker may issue a `deactivate` [=event=],
+transitioning the identifier to the `Deactivated` state.
+          </dd>
+        </dl>
+
+        <dl>
+          <dt>Abandoned</dt>
+          <dd>
+A state representing a liveness failure, entered exclusively upon the absence of
+a `heartbeat` [=event=], indicating that the [=cryptographic event log=] is no
+longer actively maintained. This is a terminal state representing the end of
+the identifier’s active lifecycle due to loss of liveness, unlike the `Deactivated`
+state, which is reached via an explicit `deactivate` [=event=].
+          </dd>
+        </dl>
+
+        <dl>
+          <dt>Deactivated</dt>
+          <dd>
+The terminal state representing permanent revocation. It is entered via
+an explicit `deactivate` [=event=]. This state signifies the end of
+the identifier’s operational lifecycle and validity.
+          </dd>
+        </dl>
+
+      </section>
+
+    </section>
+
     <section class="normative">
       <h2>Operations</h2>
 
