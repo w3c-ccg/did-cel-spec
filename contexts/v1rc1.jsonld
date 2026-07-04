@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "@protected": true,
+    "CelStorageService": "https://w3id.org/cel#CelStorageService",
+    "heartbeat": {
+      "@id": "https://w3id.org/security#heartbeat",
+      "@type": "https://w3id.org/security#multibase"
+    },
+    "heartbeatFrequency": {
+      "@id": "https://w3id.org/security#heartbeatFrequency",
+      "@type": "http://www.w3.org/2001/XMLSchema#duration"
+    }
+  }
+}
